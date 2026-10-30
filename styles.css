@@ -401,7 +401,6 @@ ul {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-sm);
-  margin-top: var(--space-xl);
 }
 
 /* ==========================================================================
@@ -603,8 +602,29 @@ ul {
    ========================================================================== */
 
 @media (min-width: 1024px) {
+  /* Foto rechts über die ganze Höhe; Text und Buttons links, vertikal zentriert */
   .hero__inner {
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-rows: 1fr auto auto 1fr;
+    grid-template-areas:
+      ". media"
+      "content media"
+      "actions media"
+      ". media";
+    row-gap: 0;
+  }
+
+  .hero__content {
+    grid-area: content;
+  }
+
+  .hero__media {
+    grid-area: media;
+  }
+
+  .hero__actions {
+    grid-area: actions;
+    margin-top: var(--space-xl);
   }
 
   .hero__photo {
@@ -612,7 +632,7 @@ ul {
   }
 
   .about {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
   }
 
   .about__media {
