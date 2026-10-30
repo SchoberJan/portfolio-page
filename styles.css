@@ -12,6 +12,8 @@
   --color-accent: #4f46e5;
   --color-accent-hover: #4338ca;
   --color-accent-soft: #eef0ff;
+  --color-linkedin: #0a66c2;
+  --color-linkedin-hover: #004182;
 
   /* Typografie */
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -358,6 +360,20 @@ ul {
 
 .hero__inner {
   position: relative;
+  display: grid;
+  gap: var(--space-xl);
+  align-items: center;
+}
+
+.hero__media {
+  display: grid;
+  place-items: center;
+}
+
+.hero__photo {
+  width: auto;
+  max-height: clamp(16rem, 50vh, 24rem);
+  border-radius: var(--radius-lg);
 }
 
 .hero__title {
@@ -383,6 +399,7 @@ ul {
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-sm);
   margin-top: var(--space-xl);
 }
@@ -417,51 +434,99 @@ ul {
   align-items: center;
 }
 
-.about__portrait {
+/* Feste Höhe, damit der Text beim Bildwechsel nicht springt */
+.about__media {
+  --slide-max-height: clamp(16rem, 50vh, 24rem);
   display: grid;
-  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   place-items: center;
-  width: 100%;
-  max-width: 20rem;
-  aspect-ratio: 4 / 5;
-  background-color: var(--color-surface);
-  border-radius: var(--radius-lg);
+  height: var(--slide-max-height);
+}
+
+/* Slideshow: Der Rahmen übernimmt das Format des aktiven Fotos
+   (Hoch- oder Querformat), die übrigen liegen unsichtbar darüber. */
+.slideshow {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
   overflow: hidden;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
 }
 
-/* Foto liegt über den Initialen; fehlt es, bleiben die Initialen sichtbar */
-.about__initials,
-.about__photo {
-  grid-area: 1 / 1;
+.slideshow__slide {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: var(--slide-max-height);
+  transition: opacity 800ms ease;
 }
 
-.about__initials {
-  font-size: clamp(3rem, 2rem + 4vw, 5rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  color: var(--color-accent);
-}
-
-.about__photo {
+.slideshow__slide:not(.slideshow__slide--active) {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+  max-height: none;
   object-fit: cover;
+  opacity: 0;
+}
+
+.slideshow__dots {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-sm);
+  display: flex;
+  transform: translateX(-50%);
+}
+
+.slideshow__dot {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.slideshow__dot::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: rgb(255 255 255 / 0.55);
+  box-shadow: 0 0 0 1px rgb(17 17 20 / 0.15);
+  transition:
+    background-color var(--transition),
+    transform var(--transition);
+}
+
+.slideshow__dot[aria-current="true"]::before {
+  background-color: #ffffff;
+  transform: scale(1.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slideshow__slide,
+  .slideshow__dot::before {
+    transition: none;
+  }
 }
 
 .social-link {
-  display: inline-flex;
-  margin-top: var(--space-lg);
-  color: var(--color-text);
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  color: var(--color-linkedin);
   transition: color var(--transition);
 }
 
 .social-link:hover {
-  color: var(--color-accent);
+  color: var(--color-linkedin-hover);
 }
 
 .social-link__icon {
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 2rem;
+  height: 2rem;
 }
 
 /* ==========================================================================
@@ -527,11 +592,6 @@ ul {
     transform: translateX(-50%);
   }
 
-  .about {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-    gap: var(--space-section);
-  }
-
   .hero::before {
     right: -15vw;
     width: 55vw;
@@ -543,8 +603,20 @@ ul {
    ========================================================================== */
 
 @media (min-width: 1024px) {
+  .hero__inner {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+
+  .hero__photo {
+    max-height: min(32rem, 60vh);
+  }
+
   .about {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  }
+
+  .about__media {
+    --slide-max-height: min(32rem, 60vh);
   }
 
   .hero::before {
