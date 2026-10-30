@@ -10,6 +10,8 @@ import {
 const D3_URL = "https://cdn.jsdelivr.net/npm/d3@7.9.0/+esm";
 const MARGIN = { top: 12, right: 4, bottom: 28, left: 32 };
 const SEGMENT_GAP = 2;
+// Maximum eines Wochenendes: Rennsieg (25) + Sprintsieg (8); seit 2025 kein Punkt mehr für die schnellste Runde
+const MAX_WEEKEND_POINTS = 33;
 
 const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -67,11 +69,11 @@ function render(d3, canvas, tooltip, rows, animate) {
     .domain(rows.map((row) => row.round))
     .range([MARGIN.left, width - MARGIN.right])
     .padding(0.25);
-  const y = d3
-    .scaleLinear()
-    .domain([0, d3.max(rows, total) || 10])
-    .nice()
-    .range([height - MARGIN.bottom, MARGIN.top]);
+  // Feste Skala bis zum Wochenend-Maximum, damit Balken aller Fahrer vergleichbar sind
+  const maxPoints = Math.max(MAX_WEEKEND_POINTS, d3.max(rows, total));
+  const y = d3.scaleLinear().domain([0, maxPoints]).range([height - MARGIN.bottom, MARGIN.top]);
+  // Hilfslinien alle 5 Punkte; zu nahe am Maximum fallen sie weg, sonst überlappen die Zahlen
+  const yTicks = [...d3.range(0, maxPoints - 5, 5), maxPoints];
   // Abgerundete Enden nur oben; nie grösser als der Balken selbst
   const radius = (barHeight) => Math.min(4, x.bandwidth() / 2, barHeight / 2);
 
@@ -93,8 +95,9 @@ function render(d3, canvas, tooltip, rows, animate) {
   svg
     .select(".driver-chart__grid")
     .attr("transform", `translate(${MARGIN.left},0)`)
-    .call(d3.axisLeft(y).ticks(5).tickSize(-(width - MARGIN.left - MARGIN.right)).tickPadding(8))
-    .call((grid) => grid.select(".domain").remove());
+    .call(d3.axisLeft(y).tickValues(yTicks).tickSize(-(width - MARGIN.left - MARGIN.right)).tickPadding(8))
+    .call((grid) => grid.select(".domain").remove())
+    .call((grid) => grid.selectAll(".tick").classed("driver-chart__tick--max", (value) => value === maxPoints));
 
   // Auf schmalen Screens nur jede zweite Runde beschriften
   const tickValues = width < 560 ? x.domain().filter((_, index) => index % 2 === 0) : x.domain();

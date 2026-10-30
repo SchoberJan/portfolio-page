@@ -804,6 +804,17 @@ ol {
   stroke: var(--color-border);
 }
 
+/* Linie für das Maximum eines Wochenendes */
+.driver-chart__tick--max line {
+  stroke: var(--color-text-muted);
+  stroke-dasharray: 4 4;
+}
+
+.driver-chart__grid .driver-chart__tick--max text {
+  font-weight: 600;
+  fill: var(--color-text);
+}
+
 .driver-chart__grid text,
 .driver-chart__axis text {
   font-family: var(--font-sans);
