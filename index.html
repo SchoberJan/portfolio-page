@@ -197,6 +197,26 @@
                 </div>
               </div>
             </div>
+
+            <div class="driver-chart" data-f1-chart>
+              <div class="driver-chart__header">
+                <div>
+                  <h4 class="driver-chart__title">Punkte pro Rennen</h4>
+                  <p class="driver-chart__summary" data-summary></p>
+                </div>
+                <label class="driver-chart__picker">
+                  <span class="driver-chart__picker-label">Fahrer</span>
+                  <select class="driver-chart__select" data-driver-select disabled></select>
+                </label>
+              </div>
+              <ul class="driver-chart__legend">
+                <li class="driver-chart__legend-item driver-chart__legend-item--race">Rennen</li>
+                <li class="driver-chart__legend-item driver-chart__legend-item--sprint">Sprint</li>
+              </ul>
+              <p class="driver-chart__status" data-status>Fahrerdaten werden geladen …</p>
+              <div class="driver-chart__canvas" data-canvas hidden></div>
+              <div class="driver-chart__tooltip" data-tooltip aria-hidden="true" hidden></div>
+            </div>
           </article>
         </div>
       </section>

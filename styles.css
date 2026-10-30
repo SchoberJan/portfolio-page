@@ -14,6 +14,9 @@
   --color-accent-soft: #eef0ff;
   --color-linkedin: #0a66c2;
   --color-linkedin-hover: #004182;
+  /* Diagrammfarben: auf Farbenblindheit und 3:1-Kontrast geprüft */
+  --color-chart-race: var(--color-accent);
+  --color-chart-sprint: #d97706;
 
   /* Typografie */
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -702,6 +705,164 @@ ol {
 
 .podium__gap {
   font-variant-numeric: tabular-nums;
+}
+
+/* Diagramm: Punkte eines Fahrers pro Rennen */
+.driver-chart {
+  position: relative;
+  margin-top: var(--space-section);
+}
+
+.driver-chart__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.driver-chart__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.driver-chart__summary,
+.driver-chart__status {
+  margin-top: 0.25rem;
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+.driver-chart__picker {
+  display: grid;
+  gap: 0.25rem;
+  width: 100%;
+  max-width: 22rem;
+  font-size: var(--fs-sm);
+}
+
+.driver-chart__picker-label {
+  font-weight: 500;
+}
+
+.driver-chart__select {
+  width: 100%;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg);
+  font: inherit;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.driver-chart__select:hover {
+  border-color: var(--color-accent);
+}
+
+.driver-chart__legend {
+  display: flex;
+  gap: var(--space-lg);
+  margin-top: var(--space-lg);
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+.driver-chart__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.driver-chart__legend-item::before {
+  content: "";
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 3px;
+  background-color: var(--color-chart-race);
+}
+
+.driver-chart__legend-item--sprint::before {
+  background-color: var(--color-chart-sprint);
+}
+
+.driver-chart__canvas {
+  margin-top: var(--space-md);
+  transition: opacity 200ms ease;
+}
+
+.driver-chart__canvas[aria-busy="true"] {
+  opacity: 0.5;
+}
+
+.driver-chart__canvas svg {
+  overflow: visible;
+}
+
+.driver-chart__grid line {
+  stroke: var(--color-border);
+}
+
+.driver-chart__grid text,
+.driver-chart__axis text {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  fill: var(--color-text-muted);
+}
+
+.driver-chart__axis .domain {
+  stroke: var(--color-text-muted);
+}
+
+.driver-chart__hit {
+  fill: transparent;
+  rx: 4px;
+}
+
+.driver-chart__round {
+  cursor: pointer;
+  outline: none;
+}
+
+.driver-chart__round:hover .driver-chart__hit,
+.driver-chart__round:focus-visible .driver-chart__hit {
+  fill: var(--color-surface);
+}
+
+.driver-chart__round:focus-visible .driver-chart__hit {
+  stroke: var(--color-accent);
+  stroke-width: 2px;
+}
+
+.driver-chart__bar--race {
+  fill: var(--color-chart-race);
+}
+
+.driver-chart__bar--sprint {
+  fill: var(--color-chart-sprint);
+}
+
+.driver-chart__tooltip {
+  position: absolute;
+  z-index: 1;
+  min-width: 11rem;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg);
+  box-shadow: 0 8px 24px rgb(17 17 20 / 0.12);
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - var(--space-xs)));
+}
+
+.driver-chart__tooltip-title {
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 /* Über mich */
