@@ -10,6 +10,13 @@ export function initSlideshow() {
   if (!slideshow) return;
 
   const slides = [...slideshow.querySelectorAll(".slideshow__slide")];
+  // Weichgezeichnete Kopie direkt vor jedem Foto; das CSS blendet sie mit dem Foto ein
+  for (const slide of slides) {
+    const backdrop = slide.cloneNode();
+    backdrop.className = "slideshow__backdrop";
+    backdrop.alt = "";
+    slide.before(backdrop);
+  }
   if (slides.length < 2) return;
 
   let current = 0;
@@ -21,7 +28,7 @@ export function initSlideshow() {
     dots.forEach((dot, i) => dot.setAttribute("aria-current", String(i === index)));
   };
 
-  // Der Rahmen übernimmt die Grösse des Fotos – ein ungeladenes Foto hätte noch keine.
+  // Ein ungeladenes Foto würde als leere Fläche eingeblendet.
   const isLoaded = (slide) => slide.complete && slide.naturalWidth > 0;
 
   const dotList = document.createElement("div");

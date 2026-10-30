@@ -1040,34 +1040,42 @@ ol {
   height: var(--slide-max-height);
 }
 
-/* Slideshow: Der Rahmen übernimmt das Format des aktiven Fotos
-   (Hoch- oder Querformat), die übrigen liegen unsichtbar darüber. */
+/* Slideshow: fester 4:5-Rahmen, damit die Grösse beim Wechsel gleich bleibt.
+   Fotos in anderem Format bleiben ganz sichtbar; die Ränder füllt eine
+   weichgezeichnete Kopie desselben Fotos. */
 .slideshow {
   position: relative;
-  width: fit-content;
-  max-width: 100%;
+  width: min(100%, calc(var(--slide-max-height) * 4 / 5));
+  aspect-ratio: 4 / 5;
   overflow: hidden;
   border-radius: var(--radius-lg);
   background-color: var(--color-surface);
 }
 
-.slideshow__slide {
-  display: block;
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: var(--slide-max-height);
-  transition: opacity 800ms ease;
-}
-
-.slideshow__slide:not(.slideshow__slide--active) {
+.slideshow__slide,
+.slideshow__backdrop {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  max-height: none;
-  object-fit: cover;
   opacity: 0;
+  transition: opacity 800ms ease;
+}
+
+.slideshow__slide {
+  object-fit: contain;
+}
+
+.slideshow__backdrop {
+  object-fit: cover;
+  filter: blur(1.5rem) brightness(0.85);
+  /* Vergrössert, damit die Unschärfe an den Kanten nicht ausfranst */
+  transform: scale(1.15);
+}
+
+.slideshow__slide--active,
+.slideshow__backdrop:has(+ .slideshow__slide--active) {
+  opacity: 1;
 }
 
 .slideshow__dots {
@@ -1104,6 +1112,7 @@ ol {
 
 @media (prefers-reduced-motion: reduce) {
   .slideshow__slide,
+  .slideshow__backdrop,
   .slideshow__dot::before {
     transition: none;
   }
