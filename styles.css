@@ -107,6 +107,11 @@ ul {
   padding: 0;
 }
 
+/* hidden muss auch gegen display: grid/flex aus Klassen gewinnen */
+[hidden] {
+  display: none !important;
+}
+
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
@@ -429,9 +434,6 @@ ul {
 /* Interessen */
 .interest {
   margin-top: var(--space-xl);
-  padding: clamp(1.25rem, 1rem + 1.5vw, 2.5rem);
-  background-color: var(--color-surface);
-  border-radius: var(--radius-lg);
 }
 
 .interest__title {
@@ -440,10 +442,97 @@ ul {
   letter-spacing: -0.015em;
 }
 
-.interest__text {
-  max-width: 40rem;
-  margin-top: var(--space-sm);
+/* F1-Countdown: Datum gross, darunter Countdown, rechts die Streckenform */
+.countdown {
+  margin-top: var(--space-lg);
+}
+
+.countdown__status {
   color: var(--color-text-muted);
+}
+
+.countdown__body {
+  max-width: 48rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.countdown__dates {
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+.countdown__days {
+  font-size: clamp(2.5rem, 1.8rem + 3vw, 4rem);
+}
+
+.countdown__months {
+  font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+}
+
+.countdown__race,
+.countdown__start {
+  margin-top: var(--space-xs);
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+.countdown__label {
+  margin-top: var(--space-lg);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+
+.countdown__timer {
+  display: flex;
+  gap: var(--space-md);
+  margin-top: var(--space-xs);
+}
+
+.countdown__part {
+  display: flex;
+  flex-direction: column;
+}
+
+.countdown__value {
+  font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown__unit {
+  margin-top: 0.25rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.countdown__track {
+  justify-self: center;
+  width: 100%;
+  max-width: 22rem;
+}
+
+.countdown__track svg {
+  width: 100%;
+  max-height: 16rem;
+  overflow: visible;
+}
+
+.countdown__track path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
 }
 
 /* Über mich */
