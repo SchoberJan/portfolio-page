@@ -902,7 +902,7 @@ ol {
   color: var(--color-text);
 }
 
-/* Teamduell: links der gewählte Fahrer, rechts der Teamkollege */
+/* Head2Head: links der gewählte Fahrer, rechts der Teamkollege */
 .head-to-head {
   max-width: 40rem;
   margin-top: var(--space-xl);
@@ -911,12 +911,6 @@ ol {
 .head-to-head__title {
   font-size: 1.125rem;
   font-weight: 600;
-}
-
-.head-to-head__hint {
-  margin-top: 0.25rem;
-  font-size: var(--fs-sm);
-  color: var(--color-text-muted);
 }
 
 .head-to-head__names,
