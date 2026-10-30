@@ -17,6 +17,7 @@
   /* Diagrammfarben: auf Farbenblindheit und 3:1-Kontrast geprüft */
   --color-chart-race: var(--color-accent);
   --color-chart-sprint: #d97706;
+  --color-chart-teammate: #0d9488;
 
   /* Typografie */
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -809,11 +810,6 @@ ol {
 
 .driver-chart__canvas {
   margin-top: var(--space-md);
-  transition: opacity 200ms ease;
-}
-
-.driver-chart__canvas[aria-busy="true"] {
-  opacity: 0.5;
 }
 
 .driver-chart__canvas svg {
@@ -904,6 +900,135 @@ ol {
 .driver-chart__tooltip-title {
   font-weight: 600;
   color: var(--color-text);
+}
+
+/* Teamduell: links der gewählte Fahrer, rechts der Teamkollege */
+.head-to-head {
+  max-width: 40rem;
+  margin-top: var(--space-xl);
+}
+
+.head-to-head__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.head-to-head__hint {
+  margin-top: 0.25rem;
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+.head-to-head__names,
+.duel__averages {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.head-to-head__names {
+  margin-top: var(--space-lg);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.head-to-head__name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.head-to-head__name::before {
+  content: "";
+  flex-shrink: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 3px;
+  background-color: var(--color-chart-race);
+}
+
+.head-to-head__name--teammate {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.head-to-head__name--teammate::before {
+  background-color: var(--color-chart-teammate);
+}
+
+/* Anzahl gemeinsamer Rennen, rechtsbündig unter dem Teamkollegen */
+.head-to-head__note {
+  grid-column: 1 / -1;
+  margin-top: -0.25rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+.head-to-head__team,
+.duel__label {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.duel {
+  margin-top: var(--space-lg);
+}
+
+.duel__average {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.duel__average:last-child {
+  text-align: right;
+}
+
+.duel__bar {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) 1.5rem;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.duel__count:last-child {
+  text-align: right;
+}
+
+.duel__track {
+  display: flex;
+  gap: 2px;
+  height: 0.75rem;
+}
+
+.duel__part {
+  flex-basis: 0;
+  min-width: 0;
+  background-color: var(--color-chart-race);
+  transition: flex-grow 500ms ease;
+}
+
+.duel__part--driver {
+  border-radius: 4px 0 0 4px;
+}
+
+.duel__part--teammate {
+  border-radius: 0 4px 4px 0;
+  background-color: var(--color-chart-teammate);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .duel__part {
+    transition: none;
+  }
 }
 
 /* Über mich */

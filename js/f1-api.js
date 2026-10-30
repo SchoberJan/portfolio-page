@@ -2,18 +2,46 @@ const BASE_URL = "https://api.jolpi.ca/ergast/f1";
 const CACHE_PREFIX = "f1:";
 // Daten ändern sich nur an Rennwochenenden; schont das Limit der API (500 Anfragen/h)
 const CACHE_TTL_MS = 60 * 60 * 1000;
+// Die API lehnt mehr als 4 Anfragen pro Sekunde ab (Status 429)
+const BURST_LIMIT = 4;
+const BURST_WINDOW_MS = 1000;
+const recentStarts = [];
+
+/** Wartet, bis im letzten Zeitfenster weniger als BURST_LIMIT Anfragen gestartet wurden. */
+async function waitForSlot() {
+  for (;;) {
+    const now = Date.now();
+    while (recentStarts.length && now - recentStarts[0] >= BURST_WINDOW_MS) recentStarts.shift();
+    if (recentStarts.length < BURST_LIMIT) {
+      recentStarts.push(now);
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, BURST_WINDOW_MS - (now - recentStarts[0])));
+  }
+}
+
+// Laufende Anfragen: fragen zwei Module gleichzeitig dasselbe ab, geht nur eine Anfrage raus
+const pending = new Map();
 
 /**
  * Holt Daten von der Jolpica-F1-API (Nachfolger der Ergast-API).
  * Antworten werden im localStorage zwischengespeichert. Schlägt die Anfrage fehl,
  * dient ein abgelaufener Cache-Eintrag als Notlösung.
  */
-async function request(path) {
-  const key = CACHE_PREFIX + path;
-  const cached = readCache(key);
-  if (cached && Date.now() - cached.time < CACHE_TTL_MS) return cached.data;
+function request(path) {
+  const cached = readCache(CACHE_PREFIX + path);
+  if (cached && Date.now() - cached.time < CACHE_TTL_MS) return Promise.resolve(cached.data);
 
+  if (!pending.has(path)) {
+    pending.set(path, fetchAndCache(path, cached).finally(() => pending.delete(path)));
+  }
+  return pending.get(path);
+}
+
+async function fetchAndCache(path, cached) {
+  const key = CACHE_PREFIX + path;
   try {
+    await waitForSlot();
     const response = await fetch(`${BASE_URL}/${path}`);
     if (!response.ok) throw new Error(`F1-API antwortet mit Status ${response.status}`);
     const { MRData } = await response.json();
@@ -59,23 +87,35 @@ export async function getDriverStandings() {
   return data.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
 }
 
-const driverPath = (driverId, endpoint) =>
-  `current/drivers/${encodeURIComponent(driverId)}/${endpoint}.json?limit=100`;
+// Die API liefert höchstens 100 Einträge pro Seite
+const PAGE_SIZE = 100;
 
-/** Rennergebnisse eines Fahrers in der laufenden Saison (Races[].Results). */
-export async function getDriverResults(driverId) {
-  const data = await request(driverPath(driverId, "results"));
-  return data.RaceTable.Races;
+/**
+ * Lädt alle Seiten eines Saison-Endpunkts und führt sie zu einer Liste von Rennen
+ * zusammen. Ein Rennen kann über zwei Seiten verteilt sein; seine Einträge
+ * (resultKey, z. B. „Results“) werden dann aneinandergehängt.
+ */
+async function requestAllRaces(endpoint, resultKey) {
+  const page = (offset) => request(`${endpoint}?limit=${PAGE_SIZE}&offset=${offset}`);
+  const first = await page(0);
+  const offsets = [];
+  for (let offset = PAGE_SIZE; offset < Number(first.total); offset += PAGE_SIZE) offsets.push(offset);
+  const pages = [first, ...(await Promise.all(offsets.map(page)))];
+
+  const races = new Map();
+  for (const race of pages.flatMap((data) => data.RaceTable.Races)) {
+    const existing = races.get(race.round);
+    if (existing) existing[resultKey].push(...race[resultKey]);
+    else races.set(race.round, { ...race, [resultKey]: [...race[resultKey]] });
+  }
+  return [...races.values()];
 }
 
-/** Sprintergebnisse eines Fahrers in der laufenden Saison (Races[].SprintResults). */
-export async function getDriverSprintResults(driverId) {
-  const data = await request(driverPath(driverId, "sprint"));
-  return data.RaceTable.Races;
-}
+/** Rennergebnisse aller Fahrer der laufenden Saison (Races[].Results). */
+export const getSeasonResults = () => requestAllRaces("current/results.json", "Results");
 
-/** Qualifying-Ergebnisse eines Fahrers in der laufenden Saison (Races[].QualifyingResults). */
-export async function getDriverQualifying(driverId) {
-  const data = await request(driverPath(driverId, "qualifying"));
-  return data.RaceTable.Races;
-}
+/** Sprintergebnisse aller Fahrer der laufenden Saison (Races[].SprintResults). */
+export const getSeasonSprints = () => requestAllRaces("current/sprint.json", "SprintResults");
+
+/** Qualifying-Ergebnisse aller Fahrer der laufenden Saison (Races[].QualifyingResults). */
+export const getSeasonQualifying = () => requestAllRaces("current/qualifying.json", "QualifyingResults");

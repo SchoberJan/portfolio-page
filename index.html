@@ -201,7 +201,7 @@
             <div class="driver-chart" data-f1-chart>
               <div class="driver-chart__header">
                 <div>
-                  <h4 class="driver-chart__title">Punkte pro Rennen</h4>
+                  <h4 class="driver-chart__title">Driver Overview</h4>
                   <p class="driver-chart__summary" data-summary></p>
                 </div>
                 <label class="driver-chart__picker">
@@ -234,6 +234,49 @@
               <p class="driver-chart__status" data-status>Fahrerdaten werden geladen …</p>
               <div class="driver-chart__canvas" data-canvas hidden></div>
               <div class="driver-chart__tooltip" data-tooltip aria-hidden="true" hidden></div>
+
+              <div class="head-to-head" data-head-to-head hidden>
+                <h5 class="head-to-head__title">Teamduell</h5>
+                <p class="head-to-head__hint">
+                  Wer im direkten Vergleich öfter vorne lag, füllt mehr vom Balken.
+                </p>
+                <div class="head-to-head__names">
+                  <span class="head-to-head__name head-to-head__name--driver" data-h2h="driver"></span>
+                  <span class="head-to-head__team" data-h2h="team"></span>
+                  <span class="head-to-head__name head-to-head__name--teammate" data-h2h="teammate"></span>
+                  <span class="head-to-head__note" data-h2h="teammate-note"></span>
+                </div>
+                <div class="duel" data-duel="qualifying">
+                  <div class="duel__averages">
+                    <span class="duel__average" data-duel-average="driver"></span>
+                    <span class="duel__label">Ø Qualifying</span>
+                    <span class="duel__average" data-duel-average="teammate"></span>
+                  </div>
+                  <div class="duel__bar">
+                    <span class="duel__count" data-duel-count="driver"></span>
+                    <span class="duel__track" role="img" data-duel-track>
+                      <span class="duel__part duel__part--driver" data-duel-part="driver"></span>
+                      <span class="duel__part duel__part--teammate" data-duel-part="teammate"></span>
+                    </span>
+                    <span class="duel__count" data-duel-count="teammate"></span>
+                  </div>
+                </div>
+                <div class="duel" data-duel="race">
+                  <div class="duel__averages">
+                    <span class="duel__average" data-duel-average="driver"></span>
+                    <span class="duel__label">Ø Rennen</span>
+                    <span class="duel__average" data-duel-average="teammate"></span>
+                  </div>
+                  <div class="duel__bar">
+                    <span class="duel__count" data-duel-count="driver"></span>
+                    <span class="duel__track" role="img" data-duel-track>
+                      <span class="duel__part duel__part--driver" data-duel-part="driver"></span>
+                      <span class="duel__part duel__part--teammate" data-duel-part="teammate"></span>
+                    </span>
+                    <span class="duel__count" data-duel-count="teammate"></span>
+                  </div>
+                </div>
+              </div>
             </div>
           </article>
         </div>

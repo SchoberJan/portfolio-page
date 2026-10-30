@@ -1,9 +1,9 @@
 import {
   getSeasonRaces,
   getDriverStandings,
-  getDriverResults,
-  getDriverSprintResults,
-  getDriverQualifying,
+  getSeasonResults,
+  getSeasonSprints,
+  getSeasonQualifying,
 } from "./f1-api.js";
 
 // Dynamisch geladen: fällt das CDN aus, bleibt der Rest der Seite funktionsfähig
@@ -13,39 +13,115 @@ const SEGMENT_GAP = 2;
 // Maximum eines Wochenendes: Rennsieg (25) + Sprintsieg (8); seit 2025 kein Punkt mehr für die schnellste Runde
 const MAX_WEEKEND_POINTS = 33;
 
+// Einheitliche Kürzel mit drei Buchstaben für die Achse, nach Strecke statt Land (Spanien und USA mehrfach)
+const RACE_CODES = {
+  albert_park: "AUS",
+  shanghai: "CHN",
+  suzuka: "JPN",
+  bahrain: "BHR",
+  jeddah: "KSA",
+  miami: "MIA",
+  imola: "EMI",
+  villeneuve: "CAN",
+  monaco: "MON",
+  catalunya: "BAR",
+  red_bull_ring: "AUT",
+  silverstone: "GBR",
+  spa: "BEL",
+  hungaroring: "HUN",
+  zandvoort: "NED",
+  monza: "ITA",
+  madring: "ESP",
+  baku: "AZE",
+  sepang: "MAL",
+  marina_bay: "SIN",
+  americas: "USA",
+  rodriguez: "MEX",
+  interlagos: "BRA",
+  vegas: "LVG",
+  losail: "QAT",
+  yas_marina: "ABU",
+};
+const raceCode = (race) =>
+  RACE_CODES[race.Circuit.circuitId] ?? race.Circuit.Location.locality.slice(0, 3).toUpperCase();
+
 const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const formatAverage = (value) =>
+  value === undefined
+    ? "–"
+    : `P${value.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`;
 
 /** Platzierung als „P3“, sonst „Ausfall“ (positionText ist dann z. B. „R“ oder „D“). */
 const formatPosition = (result) => (Number(result.positionText) ? `P${result.positionText}` : "Ausfall");
 
-/**
- * Führt Rennen, Sprints und Qualifying eines Fahrers zu einer Zeile pro
- * bereits gestarteter Runde zusammen.
- */
-async function loadDriverSeason(driverId, races) {
-  const [results, sprints, qualifying] = await Promise.all([
-    getDriverResults(driverId),
-    getDriverSprintResults(driverId),
-    getDriverQualifying(driverId),
-  ]);
-  const byRound = (list, key) => new Map(list.map((race) => [race.round, race[key][0]]));
-  const raceResults = byRound(results, "Results");
-  const sprintResults = byRound(sprints, "SprintResults");
-  const qualifyingResults = byRound(qualifying, "QualifyingResults");
+const entryOf = (entries = [], driverId) => entries.find((entry) => entry.Driver.driverId === driverId);
 
+/** Der andere Fahrer im selben Team in dieser Runde – so zählt jeder, der das zweite Cockpit gefahren ist. */
+function teammateEntry(entries = [], driverId) {
+  const own = entryOf(entries, driverId);
+  return (
+    own &&
+    entries.find(
+      (entry) =>
+        entry.Constructor.constructorId === own.Constructor.constructorId && entry.Driver.driverId !== driverId,
+    )
+  );
+}
+
+/** Eine Zeile pro bereits gestarteter Runde mit Punkten und Platzierungen. */
+function toRows(season, driverId, races) {
   return races.map((race) => {
-    const result = raceResults.get(race.round);
-    const sprint = sprintResults.get(race.round);
+    const result = entryOf(season.race.get(race.round), driverId);
+    const sprint = entryOf(season.sprint.get(race.round), driverId);
     return {
       round: race.round,
+      code: raceCode(race),
       name: race.raceName,
       racePoints: Number(result?.points ?? 0),
       sprintPoints: Number(sprint?.points ?? 0),
       race: result ? formatPosition(result) : "nicht gestartet",
       sprint: race.Sprint ? (sprint ? formatPosition(sprint) : "nicht gestartet") : null,
-      qualifying: qualifyingResults.get(race.round)?.position,
+      qualifying: entryOf(season.qualifying.get(race.round), driverId)?.position,
     };
   });
+}
+
+/**
+ * Teamkollege ist, mit wem der Fahrer die meisten Rennen im selben Team bestritten hat
+ * (bei Fahrerwechsel oder langer Verletzung). Bei Gleichstand zählt der jüngere.
+ */
+function findTeammate(d3, raceResults, driverId) {
+  const mates = [...raceResults.values()].map((entries) => teammateEntry(entries, driverId)).filter(Boolean);
+  if (!mates.length) return null;
+  const races = d3.rollup(mates, (entries) => entries.length, (mate) => mate.Driver.driverId);
+  // Runden sind aufsteigend sortiert: >= behält bei Gleichstand das spätere Rennen
+  const best = mates.reduce((leader, mate) =>
+    races.get(mate.Driver.driverId) >= races.get(leader.Driver.driverId) ? mate : leader,
+  );
+  return {
+    driverId: best.Driver.driverId,
+    name: best.Driver.familyName,
+    team: best.Constructor.name,
+    races: races.get(best.Driver.driverId),
+  };
+}
+
+/**
+ * Durchschnittsplatz und gewonnene Duelle gegen den Teamkollegen – nur in Runden,
+ * in denen beide im selben Team ein Ergebnis haben.
+ */
+function compare(d3, entriesByRound, driverId, teammateId) {
+  const pairs = [...entriesByRound.values()]
+    .map((entries) => [entryOf(entries, driverId), entryOf(entries, teammateId)])
+    .filter(([own, mate]) => own && mate && own.Constructor.constructorId === mate.Constructor.constructorId)
+    .map(([own, mate]) => [Number(own.position), Number(mate.position)]);
+  const wins = pairs.filter(([own, mate]) => own < mate).length;
+  return {
+    driverAverage: d3.mean(pairs, ([own]) => own),
+    teammateAverage: d3.mean(pairs, ([, mate]) => mate),
+    wins,
+    losses: pairs.length - wins,
+  };
 }
 
 /** Zeilen für Tooltip und Screenreader. */
@@ -99,12 +175,20 @@ function render(d3, canvas, tooltip, rows, animate) {
     .call((grid) => grid.select(".domain").remove())
     .call((grid) => grid.selectAll(".tick").classed("driver-chart__tick--max", (value) => value === maxPoints));
 
-  // Auf schmalen Screens nur jede zweite Runde beschriften
-  const tickValues = width < 560 ? x.domain().filter((_, index) => index % 2 === 0) : x.domain();
+  // Ist zu wenig Platz für alle Kürzel, nur jedes zweite beschriften
+  const tickValues = x.step() < 30 ? x.domain().filter((_, index) => index % 2 === 0) : x.domain();
+  const codes = new Map(rows.map((row) => [row.round, row.code]));
   svg
     .select(".driver-chart__axis--x")
     .attr("transform", `translate(0,${height - MARGIN.bottom})`)
-    .call(d3.axisBottom(x).tickValues(tickValues).tickSize(0).tickPadding(10));
+    .call(
+      d3
+        .axisBottom(x)
+        .tickValues(tickValues)
+        .tickFormat((round) => codes.get(round))
+        .tickSize(0)
+        .tickPadding(10),
+    );
 
   // Ohne Animation direkt setzen: auch 0-ms-Transitions warten sonst auf den nächsten Frame
   const animated = (selection) =>
@@ -159,7 +243,7 @@ function render(d3, canvas, tooltip, rows, animate) {
     tooltip.replaceChildren();
     const title = document.createElement("p");
     title.className = "driver-chart__tooltip-title";
-    title.textContent = `R${row.round} · ${row.name}`;
+    title.textContent = `${row.code} · ${row.name}`;
     tooltip.append(title);
     for (const line of describe(row)) {
       const text = document.createElement("p");
@@ -187,8 +271,8 @@ function render(d3, canvas, tooltip, rows, animate) {
 }
 
 /**
- * Diagramm mit Fahrerauswahl: Punkte des gewählten Fahrers pro Rennen,
- * aufgeteilt in Rennen und Sprint, im Tooltip ergänzt um das Qualifying.
+ * Driver Overview: Punkte des gewählten Fahrers pro Rennen (Rennen und Sprint),
+ * darunter der Vergleich mit dem Teamkollegen in Qualifying und Rennen.
  */
 export async function initF1Chart() {
   const root = document.querySelector("[data-f1-chart]");
@@ -199,12 +283,31 @@ export async function initF1Chart() {
   const canvas = root.querySelector("[data-canvas]");
   const tooltip = root.querySelector("[data-tooltip]");
   const summary = root.querySelector("[data-summary]");
+  const headToHead = root.querySelector("[data-head-to-head]");
 
   let d3;
   let standings;
   let races;
+  let season;
   try {
-    [d3, standings, races] = await Promise.all([import(D3_URL), getDriverStandings(), getSeasonRaces()]);
+    let results;
+    let sprints;
+    let qualifying;
+    [d3, standings, races, results, sprints, qualifying] = await Promise.all([
+      import(D3_URL),
+      getDriverStandings(),
+      getSeasonRaces(),
+      getSeasonResults(),
+      getSeasonSprints(),
+      getSeasonQualifying(),
+    ]);
+    // Je Runde alle Fahrer: daraus ergeben sich Punkte und die Teambesetzung pro Rennen
+    const byRound = (list, key) => new Map(list.map((race) => [race.round, race[key]]));
+    season = {
+      race: byRound(results, "Results"),
+      sprint: byRound(sprints, "SprintResults"),
+      qualifying: byRound(qualifying, "QualifyingResults"),
+    };
   } catch {
     status.textContent = "Das Diagramm konnte gerade nicht geladen werden.";
     return;
@@ -219,34 +322,55 @@ export async function initF1Chart() {
   }
 
   select.replaceChildren(
-    ...standings.map(({ position, points, Driver }) => {
+    ...standings.map(({ Driver }) => {
       const option = document.createElement("option");
       option.value = Driver.driverId;
-      option.textContent = `${position}. ${Driver.givenName} ${Driver.familyName} (${points} Pkt.)`;
+      option.textContent = `${Driver.givenName} ${Driver.familyName}`;
       return option;
     }),
   );
   select.disabled = false;
 
   let rows = [];
-  let loadId = 0;
 
-  const showDriver = async () => {
-    const id = ++loadId;
-    canvas.setAttribute("aria-busy", "true");
-    try {
-      const nextRows = await loadDriverSeason(select.value, races);
-      if (id !== loadId) return;
-      rows = nextRows;
-    } catch {
-      if (id !== loadId) return;
-      status.textContent = "Die Daten dieses Fahrers konnten gerade nicht geladen werden.";
-      status.hidden = false;
-      canvas.hidden = true;
-      return;
-    } finally {
-      if (id === loadId) canvas.removeAttribute("aria-busy");
+  /** Teamvergleich: links der gewählte Fahrer, rechts das zweite Cockpit des Teams. */
+  const showHeadToHead = (driverId, driverName) => {
+    const teammate = findTeammate(d3, season.race, driverId);
+    headToHead.hidden = !teammate;
+    if (!teammate) return;
+
+    const field = (name) => headToHead.querySelector(`[data-h2h="${name}"]`);
+    field("driver").textContent = driverName;
+    field("teammate").textContent = teammate.name;
+    field("team").textContent = teammate.team;
+    field("teammate-note").textContent = `${teammate.races} gemeinsame Rennen`;
+
+    for (const key of ["qualifying", "race"]) {
+      const result = compare(d3, season[key], driverId, teammate.driverId);
+      const duel = headToHead.querySelector(`[data-duel="${key}"]`);
+      const part = (side) => duel.querySelector(`[data-duel-part="${side}"]`);
+      duel.querySelector('[data-duel-average="driver"]').textContent = formatAverage(result.driverAverage);
+      duel.querySelector('[data-duel-average="teammate"]').textContent = formatAverage(result.teammateAverage);
+      duel.querySelector('[data-duel-count="driver"]').textContent = result.wins;
+      duel.querySelector('[data-duel-count="teammate"]').textContent = result.losses;
+      // Anteil am Balken entspricht den gewonnenen Duellen; ohne gemeinsame Rennen halb/halb
+      const shared = result.wins + result.losses;
+      part("driver").style.flexGrow = shared ? result.wins : 1;
+      part("teammate").style.flexGrow = shared ? result.losses : 1;
+      duel
+        .querySelector("[data-duel-track]")
+        .setAttribute(
+          "aria-label",
+          `${driverName} ${result.wins}, ${teammate.name} ${result.losses} gewonnene Duelle`,
+        );
     }
+  };
+
+  const showDriver = () => {
+    const driverId = select.value;
+    rows = toRows(season, driverId, races);
+    const driverName = standings.find((standing) => standing.Driver.driverId === driverId).Driver.familyName;
+    showHeadToHead(driverId, driverName);
 
     const racePoints = d3.sum(rows, (row) => row.racePoints);
     const sprintPoints = d3.sum(rows, (row) => row.sprintPoints);
@@ -275,5 +399,5 @@ export async function initF1Chart() {
     if (rows.length && !canvas.hidden) render(d3, canvas, tooltip, rows, false);
   }).observe(canvas);
 
-  await showDriver();
+  showDriver();
 }
