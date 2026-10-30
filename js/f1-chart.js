@@ -79,7 +79,7 @@ function toRows(season, driverId, races) {
       name: race.raceName,
       racePoints: Number(result?.points ?? 0),
       sprintPoints: Number(sprint?.points ?? 0),
-      race: result ? formatPosition(result) : "nicht gestartet",
+      race: result ? formatPosition(result) : season.race.has(race.round) ? "nicht gestartet" : "noch offen",
       sprint: race.Sprint ? (sprint ? formatPosition(sprint) : "nicht gestartet") : null,
       qualifying: entryOf(season.qualifying.get(race.round), driverId)?.position,
     };
@@ -313,9 +313,8 @@ export async function initF1Chart() {
     return;
   }
 
-  // Nur Runden, deren Rennen schon gestartet ist
-  const now = Date.now();
-  races = races.filter((race) => new Date(`${race.date}T${race.time ?? "00:00:00Z"}`) <= now);
+  // Nur Runden mit Ergebnis – am Sprint-Samstag zählt schon der Sprint
+  races = races.filter((race) => season.race.has(race.round) || season.sprint.has(race.round));
   if (!standings.length || !races.length) {
     status.textContent = "In dieser Saison wurden noch keine Punkte vergeben.";
     return;
