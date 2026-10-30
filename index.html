@@ -148,32 +148,50 @@
           <article class="interest" aria-labelledby="f1-title">
             <h3 class="interest__title" id="f1-title">Formel 1</h3>
             <div class="countdown" data-f1-countdown>
-              <p class="countdown__status" data-status>Nächstes Rennen wird geladen …</p>
+              <p class="countdown__status" data-status>Rennkalender wird geladen …</p>
               <div class="countdown__body" data-body hidden>
-                <div>
+                <div class="race-list">
+                  <ol class="race-list__items" id="race-list" aria-label="Rennen der Saison" data-race-list></ol>
+                  <button
+                    class="race-list__toggle"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls="race-list"
+                    data-race-toggle
+                  >
+                    Alle Rennen anzeigen
+                  </button>
+                </div>
+                <div class="countdown__track" data-track hidden></div>
+                <div class="countdown__details">
                   <p class="countdown__dates">
                     <span class="countdown__days" data-days></span>
                     <span class="countdown__months" data-months></span>
                   </p>
                   <p class="countdown__race" data-race></p>
                   <p class="countdown__label" data-label></p>
-                  <div class="countdown__timer" role="timer">
-                    <span class="countdown__part">
-                      <span class="countdown__value" data-unit-days>00</span>
-                      <span class="countdown__unit">Tage</span>
-                    </span>
-                    <span class="countdown__part">
-                      <span class="countdown__value" data-unit-hours>00</span>
-                      <span class="countdown__unit">Std</span>
-                    </span>
-                    <span class="countdown__part">
-                      <span class="countdown__value" data-unit-minutes>00</span>
-                      <span class="countdown__unit">Min</span>
-                    </span>
+                  <div data-upcoming>
+                    <div class="countdown__timer" role="timer">
+                      <span class="countdown__part">
+                        <span class="countdown__value" data-unit-days>00</span>
+                        <span class="countdown__unit">Tage</span>
+                      </span>
+                      <span class="countdown__part">
+                        <span class="countdown__value" data-unit-hours>00</span>
+                        <span class="countdown__unit">Std</span>
+                      </span>
+                      <span class="countdown__part">
+                        <span class="countdown__value" data-unit-minutes>00</span>
+                        <span class="countdown__unit">Min</span>
+                      </span>
+                    </div>
+                    <p class="countdown__start" data-start></p>
                   </div>
-                  <p class="countdown__start" data-start></p>
+                  <div data-result hidden>
+                    <p class="countdown__start" data-result-status></p>
+                    <ol class="podium" data-podium></ol>
+                  </div>
                 </div>
-                <div class="countdown__track" data-track hidden></div>
               </div>
             </div>
           </article>

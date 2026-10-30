@@ -4,14 +4,28 @@ const CIRCUITS_URL =
 // Rund 10 km: weiter weg liegt keine Strecke zu den Koordinaten aus der F1-API
 const MAX_DISTANCE_DEG = 0.1;
 
+// Die Datei wird nur einmal geladen und für jede weitere Strecke wiederverwendet
+let featuresPromise;
+
+function loadFeatures() {
+  featuresPromise ??= fetch(CIRCUITS_URL)
+    .then(async (response) => {
+      if (!response.ok) throw new Error(`Streckendaten nicht erreichbar (Status ${response.status})`);
+      return (await response.json()).features;
+    })
+    .catch((error) => {
+      featuresPromise = undefined;
+      throw error;
+    });
+  return featuresPromise;
+}
+
 /**
  * Sucht die Strecke, die am nächsten bei den Koordinaten aus der F1-API liegt,
  * und gibt ihren Verlauf als SVG-Pfad zurück – oder null, wenn keine passt.
  */
 export async function getCircuitOutline(lat, lng) {
-  const response = await fetch(CIRCUITS_URL);
-  if (!response.ok) throw new Error(`Streckendaten nicht erreichbar (Status ${response.status})`);
-  const { features } = await response.json();
+  const features = await loadFeatures();
 
   const distance = (feature) => {
     const [x, y] = feature.geometry.coordinates[0];

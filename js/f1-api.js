@@ -41,10 +41,16 @@ function writeCache(key, data) {
   }
 }
 
-/** Nächstes Rennen der laufenden Saison inkl. Strecke, oder null nach Saisonende. */
-export async function getNextRace() {
-  const data = await request("current/next.json");
-  return data.RaceTable.Races[0] ?? null;
+/** Alle Rennen der laufenden Saison inkl. Sessions und Strecke. */
+export async function getSeasonRaces() {
+  const data = await request("current.json?limit=100");
+  return data.RaceTable.Races;
+}
+
+/** Die ersten drei eines Rennens der laufenden Saison – leer, solange kein Ergebnis vorliegt. */
+export async function getPodium(round) {
+  const data = await request(`current/${encodeURIComponent(round)}/results.json?limit=3`);
+  return data.RaceTable.Races[0]?.Results ?? [];
 }
 
 /** Aktueller WM-Stand aller Fahrer. */

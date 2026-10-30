@@ -102,7 +102,8 @@ button {
   cursor: pointer;
 }
 
-ul {
+ul,
+ol {
   list-style: none;
   padding: 0;
 }
@@ -452,11 +453,91 @@ ul {
 }
 
 .countdown__body {
-  max-width: 48rem;
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  align-items: center;
-  gap: var(--space-lg);
+  grid-template-areas:
+    "list"
+    "track"
+    "details";
+  gap: var(--space-xl);
+}
+
+/* Rennliste: zugeklappt drei Rennen, aufgeklappt die ganze Saison */
+.race-list {
+  grid-area: list;
+}
+
+.race-list__items {
+  position: relative;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.race-list__items--expanded {
+  max-height: 22rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.race-list__button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  transition: background-color 150ms ease;
+}
+
+.race-list__button:hover {
+  background-color: var(--color-surface);
+}
+
+.race-list__button--done {
+  color: var(--color-text-muted);
+}
+
+.race-list__button[aria-current="true"] {
+  background-color: var(--color-accent-soft);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.race-list__round,
+.race-list__date {
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.race-list__name {
+  overflow-wrap: anywhere;
+}
+
+.race-list__toggle {
+  margin-top: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.race-list__toggle::after {
+  content: " ↓";
+}
+
+.race-list__toggle[aria-expanded="true"]::after {
+  content: " ↑";
+}
+
+.race-list__toggle:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
+.countdown__details {
+  grid-area: details;
 }
 
 .countdown__dates {
@@ -515,9 +596,11 @@ ul {
 }
 
 .countdown__track {
+  grid-area: track;
   justify-self: center;
+  align-self: center;
   width: 100%;
-  max-width: 22rem;
+  max-width: 14rem;
 }
 
 .countdown__track svg {
@@ -533,6 +616,51 @@ ul {
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
+}
+
+/* Top 3 eines gefahrenen Rennens */
+.podium {
+  display: grid;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.podium__item {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.podium__position {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.podium__item:first-child .podium__position {
+  color: var(--color-accent);
+}
+
+.podium__driver {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.podium__name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.podium__team,
+.podium__gap {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+.podium__gap {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Über mich */
@@ -704,6 +832,17 @@ ul {
     right: -15vw;
     width: 55vw;
   }
+
+  .countdown__body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "list list"
+      "track details";
+  }
+
+  .countdown__track {
+    max-width: 18rem;
+  }
 }
 
 /* ==========================================================================
@@ -746,6 +885,13 @@ ul {
 
   .about__media {
     --slide-max-height: min(32rem, 60vh);
+  }
+
+  /* Rennliste links, Strecke in der Mitte, Countdown rechts */
+  .countdown__body {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 1fr);
+    grid-template-areas: "list track details";
+    align-items: start;
   }
 
   .hero::before {
