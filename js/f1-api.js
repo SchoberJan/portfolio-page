@@ -53,8 +53,23 @@ export async function getDriverStandings() {
   return data.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
 }
 
-/** Ergebnisse eines Fahrers in allen bisherigen Rennen der laufenden Saison. */
+const driverPath = (driverId, endpoint) =>
+  `current/drivers/${encodeURIComponent(driverId)}/${endpoint}.json?limit=100`;
+
+/** Rennergebnisse eines Fahrers in der laufenden Saison (Races[].Results). */
 export async function getDriverResults(driverId) {
-  const data = await request(`current/drivers/${encodeURIComponent(driverId)}/results.json?limit=100`);
+  const data = await request(driverPath(driverId, "results"));
+  return data.RaceTable.Races;
+}
+
+/** Sprintergebnisse eines Fahrers in der laufenden Saison (Races[].SprintResults). */
+export async function getDriverSprintResults(driverId) {
+  const data = await request(driverPath(driverId, "sprint"));
+  return data.RaceTable.Races;
+}
+
+/** Qualifying-Ergebnisse eines Fahrers in der laufenden Saison (Races[].QualifyingResults). */
+export async function getDriverQualifying(driverId) {
+  const data = await request(driverPath(driverId, "qualifying"));
   return data.RaceTable.Races;
 }
