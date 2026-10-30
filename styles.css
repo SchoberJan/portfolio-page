@@ -372,7 +372,7 @@ ul {
 
 .hero__photo {
   width: auto;
-  max-height: clamp(16rem, 50vh, 24rem);
+  max-height: clamp(8rem, 25vh, 12rem);
   border-radius: var(--radius-lg);
 }
 
@@ -628,7 +628,7 @@ ul {
   }
 
   .hero__photo {
-    max-height: min(32rem, 60vh);
+    max-height: min(16rem, 30vh);
   }
 
   .about {
