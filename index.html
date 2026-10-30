@@ -209,9 +209,27 @@
                   <select class="driver-chart__select" data-driver-select disabled></select>
                 </label>
               </div>
-              <ul class="driver-chart__legend">
-                <li class="driver-chart__legend-item driver-chart__legend-item--race">Rennen</li>
-                <li class="driver-chart__legend-item driver-chart__legend-item--sprint">Sprint</li>
+              <ul class="driver-chart__legend" aria-label="Punkteart hervorheben">
+                <li>
+                  <button
+                    class="driver-chart__legend-item driver-chart__legend-item--race"
+                    type="button"
+                    aria-pressed="false"
+                    data-highlight="race"
+                  >
+                    Rennen
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="driver-chart__legend-item driver-chart__legend-item--sprint"
+                    type="button"
+                    aria-pressed="false"
+                    data-highlight="sprint"
+                  >
+                    Sprint
+                  </button>
+                </li>
               </ul>
               <p class="driver-chart__status" data-status>Fahrerdaten werden geladen …</p>
               <div class="driver-chart__canvas" data-canvas hidden></div>

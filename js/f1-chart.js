@@ -257,6 +257,19 @@ export async function initF1Chart() {
   };
 
   select.addEventListener("change", showDriver);
+
+  // Legende als Schalter: hebt Renn- oder Sprintpunkte hervor, erneuter Klick hebt es auf
+  const highlightButtons = root.querySelectorAll("[data-highlight]");
+  for (const button of highlightButtons) {
+    button.addEventListener("click", () => {
+      const active = button.getAttribute("aria-pressed") !== "true";
+      for (const other of highlightButtons) {
+        other.setAttribute("aria-pressed", String(active && other === button));
+      }
+      if (active) root.dataset.highlighted = button.dataset.highlight;
+      else delete root.dataset.highlighted;
+    });
+  }
   // Breite ändert sich (Drehen, Fenstergrösse): neu zeichnen ohne Animation
   new ResizeObserver(() => {
     if (rows.length && !canvas.hidden) render(d3, canvas, tooltip, rows, false);
