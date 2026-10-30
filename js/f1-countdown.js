@@ -132,9 +132,27 @@ export async function initF1Countdown() {
   };
 
   const startCountdown = (sessions) => {
+    const scheduleItems = sessions.map((session) => {
+      const item = createElement("li", "sessions__item");
+      item.append(
+        createElement("span", "sessions__name", session.name),
+        createElement(
+          "span",
+          "sessions__time",
+          format(session.start, { weekday: "short", hour: "2-digit", minute: "2-digit" }),
+        ),
+      );
+      return item;
+    });
+    field("sessions").replaceChildren(...scheduleItems);
+
     const tick = () => {
       const now = Date.now();
       const next = sessions.find((session) => session.start > now);
+      sessions.forEach((session, index) => {
+        scheduleItems[index].classList.toggle("sessions__item--done", session.start <= now);
+        scheduleItems[index].classList.toggle("sessions__item--next", session === next);
+      });
       if (!next) {
         field("label").textContent = "Das Rennen läuft";
         field("start").textContent = "";

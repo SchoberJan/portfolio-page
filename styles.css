@@ -569,6 +569,47 @@ ol {
   font-weight: 500;
 }
 
+/* Countdown und Zeitplan nebeneinander, bei wenig Platz untereinander */
+.countdown__upcoming {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-md) var(--space-lg);
+}
+
+/* Schmal startend, damit der Zeitplan daneben passt; die Startzeile bricht dann um */
+.countdown__clock {
+  flex: 1 1 10rem;
+}
+
+.sessions {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.25rem var(--space-md);
+  margin-top: var(--space-xs);
+  font-size: var(--fs-sm);
+}
+
+.sessions__item {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  color: var(--color-text-muted);
+}
+
+.sessions__item--done {
+  opacity: 0.55;
+}
+
+.sessions__item--next {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.sessions__time {
+  font-variant-numeric: tabular-nums;
+}
+
 .countdown__timer {
   display: flex;
   gap: var(--space-md);
@@ -889,7 +930,7 @@ ol {
 
   /* Rennliste links, Strecke in der Mitte, Countdown rechts */
   .countdown__body {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1.3fr);
     grid-template-areas: "list track details";
     align-items: start;
   }
