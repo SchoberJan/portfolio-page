@@ -90,10 +90,11 @@ function toRows(season, driverId, races) {
  * Teamkollege ist, mit wem der Fahrer die meisten Rennen im selben Team bestritten hat
  * (bei Fahrerwechsel oder langer Verletzung). Bei Gleichstand zählt der jüngere.
  */
-function findTeammate(d3, raceResults, driverId) {
+export function findTeammate(raceResults, driverId) {
   const mates = [...raceResults.values()].map((entries) => teammateEntry(entries, driverId)).filter(Boolean);
   if (!mates.length) return null;
-  const races = d3.rollup(mates, (entries) => entries.length, (mate) => mate.Driver.driverId);
+  const races = new Map();
+  for (const mate of mates) races.set(mate.Driver.driverId, (races.get(mate.Driver.driverId) ?? 0) + 1);
   // Runden sind aufsteigend sortiert: >= behält bei Gleichstand das spätere Rennen
   const best = mates.reduce((leader, mate) =>
     races.get(mate.Driver.driverId) >= races.get(leader.Driver.driverId) ? mate : leader,
@@ -110,15 +111,17 @@ function findTeammate(d3, raceResults, driverId) {
  * Durchschnittsplatz und gewonnene Duelle gegen den Teamkollegen – nur in Runden,
  * in denen beide im selben Team ein Ergebnis haben.
  */
-function compare(d3, entriesByRound, driverId, teammateId) {
+export function compare(entriesByRound, driverId, teammateId) {
   const pairs = [...entriesByRound.values()]
     .map((entries) => [entryOf(entries, driverId), entryOf(entries, teammateId)])
     .filter(([own, mate]) => own && mate && own.Constructor.constructorId === mate.Constructor.constructorId)
     .map(([own, mate]) => [Number(own.position), Number(mate.position)]);
   const wins = pairs.filter(([own, mate]) => own < mate).length;
+  // Ohne gemeinsame Rennen undefined, formatAverage zeigt dann „–“
+  const mean = (side) => (pairs.length ? pairs.reduce((sum, pair) => sum + pair[side], 0) / pairs.length : undefined);
   return {
-    driverAverage: d3.mean(pairs, ([own]) => own),
-    teammateAverage: d3.mean(pairs, ([, mate]) => mate),
+    driverAverage: mean(0),
+    teammateAverage: mean(1),
     wins,
     losses: pairs.length - wins,
   };
@@ -334,7 +337,7 @@ export async function initF1Chart() {
 
   /** Teamvergleich: links der gewählte Fahrer, rechts das zweite Cockpit des Teams. */
   const showHeadToHead = (driverId, driverName) => {
-    const teammate = findTeammate(d3, season.race, driverId);
+    const teammate = findTeammate(season.race, driverId);
     headToHead.hidden = !teammate;
     if (!teammate) return;
 
@@ -345,7 +348,7 @@ export async function initF1Chart() {
     field("teammate-note").textContent = `${teammate.races} gemeinsame Rennen`;
 
     for (const key of ["qualifying", "race"]) {
-      const result = compare(d3, season[key], driverId, teammate.driverId);
+      const result = compare(season[key], driverId, teammate.driverId);
       const duel = headToHead.querySelector(`[data-duel="${key}"]`);
       const part = (side) => duel.querySelector(`[data-duel-part="${side}"]`);
       duel.querySelector('[data-duel-average="driver"]').textContent = formatAverage(result.driverAverage);
