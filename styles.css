@@ -15,7 +15,7 @@
   --color-accent-soft: rgb(39 244 210 / 0.12);
   --color-on-accent: #04110e;
   --color-blueprint: #66727a;
-  --color-grid: rgb(238 241 242 / 0.035);
+  --color-veil: rgb(7 9 10 / 0.8);
   /* Diagrammfarben: Helligkeit trennt die Reihen auch bei Farbenblindheit, Kontrast mindestens 3:1 */
   --color-chart-race: var(--color-accent);
   --color-chart-sprint: #707c85;
@@ -90,6 +90,31 @@ body {
   background-color: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   overflow-wrap: break-word;
+}
+
+/* Bauplan als fester Seitenhintergrund; schmale Bildschirme dämpfen ihn, weil Text darüber liegt */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    url("./images/blueprint.svg") 72% center / cover no-repeat,
+    linear-gradient(100deg, var(--color-accent-soft), transparent 55%);
+  opacity: 0.4;
+}
+
+/* Inhalte brauchen Ruhe: dort bleibt der Bauplan so dezent wie ein Raster */
+.section,
+.site-footer,
+.telemetry {
+  background-color: var(--color-veil);
+}
+
+/* Schleier bis zum Fensterrand, der Inhalt bleibt in der Spalte */
+.telemetry {
+  box-shadow: 0 0 0 100vmax var(--color-veil);
+  clip-path: inset(0 -100vmax);
 }
 
 main {
@@ -330,39 +355,17 @@ ol {
 }
 
 /* ==========================================================================
-   Landing: die Seite als Konstruktionszeichnung
+   Landing
    ========================================================================== */
-
-/* Zeichenblatt: Raster und Blattrand für die Landing und alle Abschnitte */
-.landing,
-.section {
-  position: relative;
-  background-image:
-    linear-gradient(var(--color-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
-  background-size: 4rem 4rem;
-  background-position: center top;
-}
 
 .landing {
   display: flex;
   min-height: calc(100vh - var(--header-height));
   min-height: calc(100svh - var(--header-height));
   padding-block: 2rem var(--space-md);
-  overflow: hidden;
-}
-
-.landing::before,
-.section::before {
-  content: "";
-  position: absolute;
-  inset: var(--space-xs);
-  border: 1px solid var(--color-border);
-  pointer-events: none;
 }
 
 .landing__inner {
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-xl);
@@ -409,128 +412,7 @@ ol {
   margin-top: var(--space-lg);
 }
 
-.landing__drawing {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1000 / 400;
-}
-
-/* Linien der Zeichnung: bewusst zurückhaltend, damit der Text führt */
-.blueprint {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.25;
-  color: var(--color-blueprint);
-}
-
-/* Auf schmalen Bildschirmen wären dünne Linien kaum sichtbar */
-.landing__drawing .blueprint {
-  stroke-width: 2.5;
-}
-
-.landing__engine {
-  width: 60%;
-  height: auto;
-  margin-inline: auto;
-}
-
-/* Die Zeichnungen skalieren unterschiedlich: Schrift so setzen, dass sie rund 11px gross bleibt */
-.landing__engine .blueprint__label {
-  font-size: 1rem;
-}
-
-.blueprint [data-part],
-.blueprint[data-part] {
-  transition: color var(--transition);
-}
-
-.blueprint__axis {
-  stroke-dasharray: 16 4 2 4;
-  stroke-width: 0.75;
-}
-
-.blueprint__dash {
-  stroke-dasharray: 6 5;
-}
-
-.blueprint__label {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-  fill: currentColor;
-  stroke: none;
-}
-
-/* Masse wären auf schmalen Bildschirmen zu klein zum Lesen */
-.blueprint__dimensions {
-  display: none;
-}
-
-/* Positionsnummer in der Zeichnung, passend zur Zeile in der Stückliste */
-.balloon {
-  position: absolute;
-  top: 5%;
-  display: grid;
-  place-items: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-  background-color: var(--color-bg);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--color-text-muted);
-  transform: translate(-50%, -50%);
-  transition: color var(--transition);
-}
-
-.balloon--telemetry {
-  left: 11%;
-}
-
-.balloon--cockpit {
-  left: 40%;
-}
-
-.balloon--power {
-  left: 59%;
-}
-
-.balloon--chassis {
-  left: 73%;
-}
-
-/* Zeile der Stückliste aktiv: das zugehörige Bauteil leuchtet auf */
-.landing:has([data-target="power"]:is(:hover, :focus-visible)) [data-part="power"],
-.landing:has([data-target="telemetry"]:is(:hover, :focus-visible)) [data-part="telemetry"],
-.landing:has([data-target="chassis"]:is(:hover, :focus-visible)) [data-part="chassis"],
-.landing:has([data-target="cockpit"]:is(:hover, :focus-visible)) [data-part="cockpit"] {
-  color: var(--color-accent);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  /* Die Linien zeichnen sich beim Laden einmal auf */
-  .blueprint__draw {
-    stroke-dasharray: 1;
-    animation: blueprint-draw 1600ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-}
-
-@keyframes blueprint-draw {
-  from {
-    stroke-dashoffset: 1;
-  }
-
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-/* Stückliste als Schriftfeld der Zeichnung */
+/* Stückliste als Schriftfeld */
 .parts {
   border: 1px solid var(--color-border);
   background-color: var(--color-bg);
@@ -1325,20 +1207,8 @@ li:not(:last-child) > .parts__link {
   height: var(--slide-max-height);
 }
 
-/* Trägt die Breite, damit die Beschriftung bündig unter dem Foto liegt */
 .about__frame {
-  position: relative;
   width: min(100%, calc(var(--slide-max-height) * 3 / 4));
-}
-
-.about__detail {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: var(--space-sm);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--color-text-muted);
 }
 
 /* Slideshow: fester 3:4-Rahmen, damit die Grösse beim Wechsel gleich bleibt.
@@ -1533,27 +1403,6 @@ li:not(:last-child) > .parts__link {
     transform: translateX(-50%);
   }
 
-  .blueprint__dimensions {
-    display: block;
-  }
-
-  .landing__drawing .blueprint {
-    stroke-width: 1.25;
-  }
-
-  .landing__drawing .blueprint__label {
-    font-size: 1rem;
-  }
-
-  /* Motorschnitt rechts neben dem zweizeiligen Namen */
-  .landing__engine {
-    position: absolute;
-    top: 0;
-    right: var(--container-padding);
-    width: clamp(12rem, 30vw, 15rem);
-    margin: 0;
-  }
-
   .parts__list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1597,28 +1446,19 @@ li:not(:last-child) > .parts__link {
     --fs-display: min(6rem, 5.4vw);
   }
 
-  /* Blattaufteilung: Text und Auto links, Motor und Stückliste rechts, Live-Daten am Fuss */
+  body::before {
+    opacity: 0.8;
+  }
+
+  /* Text links, Stückliste rechts unten über dem Bauplan, Live-Daten am Fuss */
   .landing__inner {
     display: grid;
     grid-template-columns: minmax(0, 1.7fr) minmax(18rem, 1fr);
-    grid-template-rows: auto 1fr auto auto;
+    grid-template-rows: 1fr auto;
     grid-template-areas:
-      "intro engine"
       "intro parts"
-      "drawing parts"
       "telemetry telemetry";
     gap: var(--space-md) var(--space-xl);
-  }
-
-  .landing__engine {
-    position: static;
-    grid-area: engine;
-    justify-self: end;
-    width: clamp(14rem, 16vw, 20rem);
-  }
-
-  .landing__drawing .blueprint__label {
-    font-size: 1.25rem;
   }
 
   .about__media {
@@ -1645,15 +1485,11 @@ li:not(:last-child) > .parts__link {
 
   .landing__intro {
     grid-area: intro;
+    align-self: center;
   }
 
   .landing__name {
     display: inline;
-  }
-
-  .landing__drawing {
-    grid-area: drawing;
-    align-self: end;
   }
 
   .parts {
@@ -1690,27 +1526,5 @@ li:not(:last-child) > .parts__link {
     grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1.3fr);
     grid-template-areas: "list track details";
     align-items: start;
-  }
-}
-
-/* ==========================================================================
-   Grosser Desktop: die Zeichnungen werden grösser, ihre Schrift bleibt gleich
-   ========================================================================== */
-
-@media (min-width: 1280px) {
-  .landing__drawing .blueprint__label {
-    font-size: 1rem;
-  }
-}
-
-@media (min-width: 1440px) {
-  .landing__drawing .blueprint__label {
-    font-size: 0.875rem;
-  }
-}
-
-@media (min-width: 1600px) {
-  .landing__engine .blueprint__label {
-    font-size: 0.75rem;
   }
 }
