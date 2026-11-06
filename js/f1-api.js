@@ -11,12 +11,15 @@ const recentStarts = [];
 async function waitForSlot() {
   for (;;) {
     const now = Date.now();
-    while (recentStarts.length && now - recentStarts[0] >= BURST_WINDOW_MS) recentStarts.shift();
+    while (recentStarts.length && now - recentStarts[0] >= BURST_WINDOW_MS)
+      recentStarts.shift();
     if (recentStarts.length < BURST_LIMIT) {
       recentStarts.push(now);
       return;
     }
-    await new Promise((resolve) => setTimeout(resolve, BURST_WINDOW_MS - (now - recentStarts[0])));
+    await new Promise((resolve) =>
+      setTimeout(resolve, BURST_WINDOW_MS - (now - recentStarts[0])),
+    );
   }
 }
 
@@ -30,10 +33,14 @@ const pending = new Map();
  */
 function request(path) {
   const cached = readCache(CACHE_PREFIX + path);
-  if (cached && Date.now() - cached.time < CACHE_TTL_MS) return Promise.resolve(cached.data);
+  if (cached && Date.now() - cached.time < CACHE_TTL_MS)
+    return Promise.resolve(cached.data);
 
   if (!pending.has(path)) {
-    pending.set(path, fetchAndCache(path, cached).finally(() => pending.delete(path)));
+    pending.set(
+      path,
+      fetchAndCache(path, cached).finally(() => pending.delete(path)),
+    );
   }
   return pending.get(path);
 }
@@ -43,7 +50,8 @@ async function fetchAndCache(path, cached) {
   try {
     await waitForSlot();
     const response = await fetch(`${BASE_URL}/${path}`);
-    if (!response.ok) throw new Error(`F1-API antwortet mit Status ${response.status}`);
+    if (!response.ok)
+      throw new Error(`F1-API antwortet mit Status ${response.status}`);
     const { MRData } = await response.json();
     writeCache(key, MRData);
     return MRData;
@@ -77,7 +85,9 @@ export async function getSeasonRaces() {
 
 /** Die ersten drei eines Rennens der laufenden Saison – leer, solange kein Ergebnis vorliegt. */
 export async function getPodium(round) {
-  const data = await request(`current/${encodeURIComponent(round)}/results.json?limit=3`);
+  const data = await request(
+    `current/${encodeURIComponent(round)}/results.json?limit=3`,
+  );
   return data.RaceTable.Races[0]?.Results ?? [];
 }
 
@@ -96,10 +106,16 @@ const PAGE_SIZE = 100;
  * (resultKey, z. B. „Results“) werden dann aneinandergehängt.
  */
 async function requestAllRaces(endpoint, resultKey) {
-  const page = (offset) => request(`${endpoint}?limit=${PAGE_SIZE}&offset=${offset}`);
+  const page = (offset) =>
+    request(`${endpoint}?limit=${PAGE_SIZE}&offset=${offset}`);
   const first = await page(0);
   const offsets = [];
-  for (let offset = PAGE_SIZE; offset < Number(first.total); offset += PAGE_SIZE) offsets.push(offset);
+  for (
+    let offset = PAGE_SIZE;
+    offset < Number(first.total);
+    offset += PAGE_SIZE
+  )
+    offsets.push(offset);
   const pages = [first, ...(await Promise.all(offsets.map(page)))];
 
   const races = new Map();
@@ -112,10 +128,13 @@ async function requestAllRaces(endpoint, resultKey) {
 }
 
 /** Rennergebnisse aller Fahrer der laufenden Saison (Races[].Results). */
-export const getSeasonResults = () => requestAllRaces("current/results.json", "Results");
+export const getSeasonResults = () =>
+  requestAllRaces("current/results.json", "Results");
 
 /** Sprintergebnisse aller Fahrer der laufenden Saison (Races[].SprintResults). */
-export const getSeasonSprints = () => requestAllRaces("current/sprint.json", "SprintResults");
+export const getSeasonSprints = () =>
+  requestAllRaces("current/sprint.json", "SprintResults");
 
 /** Qualifying-Ergebnisse aller Fahrer der laufenden Saison (Races[].QualifyingResults). */
-export const getSeasonQualifying = () => requestAllRaces("current/qualifying.json", "QualifyingResults");
+export const getSeasonQualifying = () =>
+  requestAllRaces("current/qualifying.json", "QualifyingResults");
