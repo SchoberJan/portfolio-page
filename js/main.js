@@ -6,6 +6,7 @@ import { initSlideshow } from "./slideshow.js";
 import { initF1Countdown } from "./f1-countdown.js";
 import { initF1Chart } from "./f1-chart.js";
 import { initF1Telemetry } from "./f1-telemetry.js";
+import { initCarExplorer } from "./car-explorer.js";
 
 initHeader();
 initNavigation();
@@ -15,3 +16,4 @@ initSlideshow();
 initF1Countdown();
 initF1Chart();
 initF1Telemetry();
+initCarExplorer();
