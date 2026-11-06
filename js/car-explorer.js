@@ -3,8 +3,8 @@ const TOUCHED_CLASS = "car-explorer--touched";
 const DRAWING_CLASS = "car-explorer--drawing";
 
 /**
- * Macht das F1-Auto bei „Über mich“ klickbar: Bauteil, Nummer oder Foto
- * wählen ein Bauteil, sein Text und sein Foto werden hervorgehoben.
+ * Macht das F1-Auto bei „Über mich“ klickbar: Bauteil oder Nummer
+ * wählen ein Bauteil, sein Text erscheint daneben.
  */
 export function initCarExplorer() {
   const root = document.querySelector("[data-car-explorer]");

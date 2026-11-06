@@ -180,11 +180,10 @@
               </g>
             </svg>
 
-            <!-- Maus und Touch; für die Tastatur gibt es die beschrifteten Schalter darunter -->
-            <button class="car-explorer__hotspot car-explorer__hotspot--telemetry" type="button" data-part="telemetry" tabindex="-1" aria-hidden="true">2</button>
-            <button class="car-explorer__hotspot car-explorer__hotspot--cockpit" type="button" data-part="cockpit" tabindex="-1" aria-hidden="true">4</button>
-            <button class="car-explorer__hotspot car-explorer__hotspot--power" type="button" data-part="power" tabindex="-1" aria-hidden="true">1</button>
-            <button class="car-explorer__hotspot car-explorer__hotspot--chassis" type="button" data-part="chassis" tabindex="-1" aria-hidden="true">3</button>
+            <button class="car-explorer__hotspot car-explorer__hotspot--power" type="button" data-part="power" aria-pressed="false" aria-controls="part-power" aria-label="Antrieb anzeigen">1</button>
+            <button class="car-explorer__hotspot car-explorer__hotspot--telemetry" type="button" data-part="telemetry" aria-pressed="false" aria-controls="part-telemetry" aria-label="Telemetrie anzeigen">2</button>
+            <button class="car-explorer__hotspot car-explorer__hotspot--chassis" type="button" data-part="chassis" aria-pressed="false" aria-controls="part-chassis" aria-label="Chassis anzeigen">3</button>
+            <button class="car-explorer__hotspot car-explorer__hotspot--cockpit" type="button" data-part="cockpit" aria-pressed="false" aria-controls="part-cockpit" aria-label="Cockpit anzeigen">4</button>
           </div>
 
           <div class="car-explorer__panels" aria-live="polite">
@@ -232,55 +231,6 @@
                 und arbeite analytisch und strukturiert.
               </p>
             </div>
-          </div>
-
-          <div class="car-explorer__photos" role="group" aria-label="Bauteil über sein Foto wählen">
-            <button class="car-explorer__photo" type="button" data-part="power" aria-pressed="false" aria-controls="part-power">
-              <img
-                class="car-explorer__image"
-                src="./images/slideshow/7c908077-9783-4f66-a311-28eb881762ff.JPG"
-                alt="Antrieb: Zwei Rollhockeyspieler feiern mit Pokal den Schweizer Meistertitel"
-                width="768"
-                height="1024"
-                loading="lazy"
-              />
-              <span class="car-explorer__number car-explorer__number--photo" aria-hidden="true">1</span>
-            </button>
-            <!-- shortcut: vorläufiges Foto ohne Bezug zum Bauteil, ersetzen, sobald das passende da ist -->
-            <button class="car-explorer__photo" type="button" data-part="telemetry" aria-pressed="false" aria-controls="part-telemetry">
-              <img
-                class="car-explorer__image"
-                src="./images/slideshow/7a5f8a14-09ab-47ff-ae6c-263ad5b3d274.JPG"
-                alt="Telemetrie: Auf der Driving Range mit Golfschläger"
-                width="1049"
-                height="1179"
-                loading="lazy"
-              />
-              <span class="car-explorer__number car-explorer__number--photo" aria-hidden="true">2</span>
-            </button>
-            <button class="car-explorer__photo" type="button" data-part="chassis" aria-pressed="false" aria-controls="part-chassis">
-              <img
-                class="car-explorer__image"
-                src="./images/profil.jpg"
-                alt="Chassis: Porträt von Jan Schober"
-                width="600"
-                height="800"
-                loading="lazy"
-              />
-              <span class="car-explorer__number car-explorer__number--photo" aria-hidden="true">3</span>
-            </button>
-            <!-- shortcut: vorläufiges Foto ohne Bezug zum Bauteil, ersetzen, sobald das passende da ist -->
-            <button class="car-explorer__photo" type="button" data-part="cockpit" aria-pressed="false" aria-controls="part-cockpit">
-              <img
-                class="car-explorer__image"
-                src="./images/slideshow/IMG_3430.jpg"
-                alt="Cockpit: Zwei Personen mit Sonnenbrillen sitzen lachend auf einer Steinmauer"
-                width="4284"
-                height="5712"
-                loading="lazy"
-              />
-              <span class="car-explorer__number car-explorer__number--photo" aria-hidden="true">4</span>
-            </button>
           </div>
         </div>
       </section>

@@ -1103,7 +1103,7 @@ ol {
   align-items: center;
 }
 
-/* Klickbares F1-Auto: Bauteil wählen, Text und Foto folgen */
+/* Klickbares F1-Auto: Bauteil wählen, der Text folgt */
 
 .car-explorer__hint {
   margin-top: var(--space-lg);
@@ -1195,51 +1195,7 @@ ol {
   color: var(--color-on-accent);
 }
 
-/* Fotos der Bauteile: Das gewählte ist farbig, die anderen treten zurück */
-.car-explorer__photos {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-sm);
-}
-
-.car-explorer__photo {
-  position: relative;
-  display: block;
-  aspect-ratio: 1;
-  overflow: hidden;
-  padding: 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background-color: var(--color-surface);
-  transition:
-    border-color var(--transition),
-    box-shadow var(--transition);
-}
-
-.car-explorer__image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
-  filter: grayscale(1) brightness(0.7);
-  transition: filter var(--transition);
-}
-
-.car-explorer__photo:hover,
-.car-explorer__photo[aria-pressed="true"] {
-  border-color: var(--color-accent);
-}
-
-.car-explorer__photo[aria-pressed="true"] {
-  box-shadow: 0 0 0 1px var(--color-accent);
-}
-
-.car-explorer__photo:hover .car-explorer__image,
-.car-explorer__photo[aria-pressed="true"] .car-explorer__image {
-  filter: none;
-}
-
-/* Dieselbe Nummer wie am Auto: verbindet Bauteil, Text und Foto */
+/* Dieselbe Nummer wie am Auto: verbindet Bauteil und Text */
 .car-explorer__number {
   display: inline-grid;
   place-items: center;
@@ -1251,19 +1207,6 @@ ol {
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   font-weight: 500;
-  color: var(--color-on-accent);
-}
-
-.car-explorer__number--photo {
-  position: absolute;
-  top: var(--space-xs);
-  left: var(--space-xs);
-  background-color: var(--color-bg);
-  color: var(--color-accent);
-}
-
-.car-explorer__photo[aria-pressed="true"] .car-explorer__number--photo {
-  background-color: var(--color-accent);
   color: var(--color-on-accent);
 }
 
@@ -1465,10 +1408,6 @@ ol {
     transform: translateX(-50%);
   }
 
-  .car-explorer__photos {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
   .car-explorer__car {
     stroke-width: 1.5;
   }
@@ -1524,13 +1463,12 @@ ol {
     display: inline;
   }
 
-  /* Auto und Text auf gleicher Höhe, darunter die Fotos: nach dem Klick muss niemand scrollen */
+  /* Auto und Text auf gleicher Höhe: nach dem Klick muss niemand scrollen */
   .about {
     grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
     grid-template-areas:
       "intro intro"
-      "stage panels"
-      "photos photos";
+      "stage panels";
   }
 
   .about__intro {
@@ -1544,10 +1482,6 @@ ol {
   .car-explorer__panels {
     grid-area: panels;
     min-height: 16rem;
-  }
-
-  .car-explorer__photos {
-    grid-area: photos;
   }
   /* Rennliste links, Strecke in der Mitte, Countdown rechts */
   .countdown__body {
