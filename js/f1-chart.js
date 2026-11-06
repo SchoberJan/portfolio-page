@@ -147,7 +147,7 @@ function render(d3, canvas, tooltip, rows, animate) {
     .scaleBand()
     .domain(rows.map((row) => row.round))
     .range([MARGIN.left, width - MARGIN.right])
-    .padding(0.25);
+    .padding(0.5);
   // Feste Skala bis zum Wochenend-Maximum, damit Balken aller Fahrer vergleichbar sind
   const maxPoints = Math.max(MAX_WEEKEND_POINTS, d3.max(rows, total));
   const y = d3.scaleLinear().domain([0, maxPoints]).range([height - MARGIN.bottom, MARGIN.top]);
