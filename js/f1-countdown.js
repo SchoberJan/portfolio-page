@@ -1,7 +1,7 @@
 import { getSeasonRaces, getPodium } from "./f1-api.js";
 import { getCircuitOutline } from "./circuit-map.js";
 
-const TIME_ZONE = "Europe/Berlin";
+const TIME_ZONE = "Europe/Zurich";
 const SESSIONS = [
   ["FirstPractice", "FP1"],
   ["SecondPractice", "FP2"],
@@ -13,12 +13,12 @@ const SESSIONS = [
 // Ein Rennen dauert höchstens rund zwei Stunden, mit Unterbrechungen etwas länger
 const RACE_DURATION_MS = 3 * 60 * 60 * 1000;
 
-const toDate = ({ date, time = "00:00:00Z" }) => new Date(`${date}T${time}`);
+export const toDate = ({ date, time = "00:00:00Z" }) => new Date(`${date}T${time}`);
 const format = (date, options) =>
   new Intl.DateTimeFormat("de-DE", { timeZone: TIME_ZONE, ...options }).format(date);
 const formatMonth = (date) => format(date, { month: "short" }).replace(".", "").toUpperCase();
 const pad = (value) => String(value).padStart(2, "0");
-const isFinished = (race) => toDate(race).getTime() + RACE_DURATION_MS < Date.now();
+export const isFinished = (race) => toDate(race).getTime() + RACE_DURATION_MS < Date.now();
 
 function createElement(tag, className, text = "") {
   const element = document.createElement(tag);
@@ -37,7 +37,7 @@ function getSessions(race) {
   return sessions.sort((a, b) => a.start - b.start);
 }
 
-/** Tage und Monat(e) des Wochenendes in Berliner Zeit, z. B. „30–1“ und „OKT–NOV“. */
+/** Tage und Monat(e) des Wochenendes in Schweizer Zeit, z. B. „30–1“ und „OKT–NOV“. */
 function formatWeekend(first, last) {
   const days = `${format(first, { day: "numeric" })}–${format(last, { day: "numeric" })}`;
   const firstMonth = formatMonth(first);
@@ -171,7 +171,7 @@ export async function initF1Countdown() {
         month: "2-digit",
         hour: "2-digit",
         minute: "2-digit",
-      })} Uhr (Berliner Zeit)`;
+      })} Uhr (Schweizer Zeit)`;
     };
     timer = setInterval(tick, 1000);
     tick();
