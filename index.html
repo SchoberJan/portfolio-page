@@ -85,40 +85,6 @@
             </div>
           </div>
 
-          <div class="parts">
-            <h2 class="parts__title">Stückliste</h2>
-            <ol class="parts__list">
-              <li>
-                <a class="parts__link" href="#profile-power">
-                  <span class="parts__position" aria-hidden="true">1</span>
-                  <span class="parts__name">Antrieb</span>
-                  <span class="parts__spec">Rollhockey, Schweizer Nationalmannschaft</span>
-                </a>
-              </li>
-              <li>
-                <a class="parts__link" href="#profile-telemetry">
-                  <span class="parts__position" aria-hidden="true">2</span>
-                  <span class="parts__name">Telemetrie</span>
-                  <span class="parts__spec">Junior Finance &amp; Power BI Specialist</span>
-                </a>
-              </li>
-              <li>
-                <a class="parts__link" href="#profile-chassis">
-                  <span class="parts__position" aria-hidden="true">3</span>
-                  <span class="parts__name">Chassis</span>
-                  <span class="parts__spec">Bankausbildung und Beratungserfahrung</span>
-                </a>
-              </li>
-              <li>
-                <a class="parts__link" href="#profile-cockpit">
-                  <span class="parts__position" aria-hidden="true">4</span>
-                  <span class="parts__name">Cockpit</span>
-                  <span class="parts__spec">Student BSc Wirtschaftsinformatik</span>
-                </a>
-              </li>
-            </ol>
-          </div>
-
           <aside class="telemetry" aria-label="Live-Daten der laufenden F1-Saison" data-f1-telemetry>
             <dl class="telemetry__data">
               <div class="telemetry__item">
@@ -140,42 +106,139 @@
       </section>
 
       <section class="section" id="about" aria-labelledby="about-title">
-        <div class="container about">
-          <div>
+        <div class="container about car-explorer" data-car-explorer>
+          <div class="about__main">
             <h2 class="section__title" id="about-title">Wer ich bin</h2>
             <p class="section__text">
               Spitzensport und Daten: In beiden Welten gewinnt, wer misst, versteht und sich
               verbessert, genau wie in der Formel 1.
             </p>
-            <ol class="profile">
-              <li class="profile__item" id="profile-power">
-                <span class="profile__position" aria-hidden="true">1</span>
-                <h3 class="profile__name">Antrieb</h3>
-                <p class="profile__text">
-                  Rollhockey in der Schweizer Nationalmannschaft: Disziplin und Belastbarkeit.
-                </p>
-              </li>
-              <li class="profile__item" id="profile-telemetry">
-                <span class="profile__position" aria-hidden="true">2</span>
-                <h3 class="profile__name">Telemetrie</h3>
-                <p class="profile__text">
-                  Junior Finance &amp; Power BI Specialist: Aus Zahlen werden Entscheidungen.
-                </p>
-              </li>
-              <li class="profile__item" id="profile-chassis">
-                <span class="profile__position" aria-hidden="true">3</span>
-                <h3 class="profile__name">Chassis</h3>
-                <p class="profile__text">
-                  Bankausbildung und Beratung: Komplexes wird verständlich.
-                </p>
-              </li>
-              <li class="profile__item" id="profile-cockpit">
-                <span class="profile__position" aria-hidden="true">4</span>
-                <h3 class="profile__name">Cockpit</h3>
-                <p class="profile__text">Student BSc Wirtschaftsinformatik.</p>
-              </li>
-            </ol>
+            <div class="car-explorer__controls">
+              <p class="car-explorer__hint">Klicke auf ein Bauteil des Autos, um mehr zu erfahren.</p>
+
+              <div class="car-explorer__stage" data-car-stage>
+                <svg class="car-explorer__car" viewBox="0 0 1000 400" aria-hidden="true" focusable="false">
+                  <path class="car-explorer__axis" d="M8 200H992" />
+
+                  <g class="car-explorer__part" data-part="chassis">
+                    <rect class="car-explorer__zone" x="24" y="40" width="946" height="320" />
+                    <g id="car-chassis">
+                      <path
+                        class="car-explorer__draw"
+                        pathLength="1"
+                        d="M62 200C110 192 180 182 250 174L335 164C372 158 392 140 410 104C418 86 434 72 462 68L620 72C680 86 740 130 828 166L872 182L878 200"
+                      />
+                      <path class="car-explorer__dash" d="M360 158C390 120 400 78 432 62L680 64L700 108" />
+                      <path class="car-explorer__draw" pathLength="1" d="M34 200V70Q34 62 44 62H92Q100 62 100 72V96L70 120L66 164L60 200" />
+                      <path d="M44 72C60 110 60 150 52 200M58 72C76 110 78 150 68 200" />
+                      <rect class="car-explorer__draw" pathLength="1" x="148" y="45" width="118" height="52" rx="8" />
+                      <rect class="car-explorer__draw" pathLength="1" x="706" y="45" width="118" height="62" rx="8" />
+                      <path d="M186 97L292 168M240 97L300 166M720 107L760 128M800 107L790 146" />
+                      <path class="car-explorer__draw" pathLength="1" d="M890 200V112H956V200" />
+                      <path d="M886 108H960M900 112V200M916 112V200M872 186L890 190" />
+                    </g>
+                    <use href="#car-chassis" transform="matrix(1 0 0 -1 0 400)" />
+                    <path d="M730 30V94" />
+                  </g>
+
+                  <g class="car-explorer__part" data-part="cockpit">
+                    <rect class="car-explorer__zone" x="296" y="150" width="172" height="100" />
+                    <g id="car-cockpit">
+                      <path class="car-explorer__draw" pathLength="1" d="M340 200V180C344 170 410 168 430 176C450 182 462 190 466 200" />
+                      <path d="M335 182C360 158 440 158 462 176" />
+                    </g>
+                    <use href="#car-cockpit" transform="matrix(1 0 0 -1 0 400)" />
+                    <path d="M296 200H335M400 30V164" />
+                    <circle cx="372" cy="200" r="12" />
+                  </g>
+
+                  <g class="car-explorer__part" data-part="power">
+                    <circle class="car-explorer__zone" cx="590" cy="200" r="110" />
+                    <g id="car-power">
+                      <path class="car-explorer__draw" pathLength="1" d="M470 178C520 162 640 158 700 168L820 186V200" />
+                      <circle cx="510" cy="180" r="12" />
+                      <circle cx="556" cy="178" r="12" />
+                      <circle cx="602" cy="176" r="12" />
+                    </g>
+                    <use href="#car-power" transform="matrix(1 0 0 -1 0 400)" />
+                    <circle cx="662" cy="200" r="18" />
+                    <ellipse cx="486" cy="200" rx="12" ry="8" />
+                    <path d="M590 30V160" />
+                  </g>
+
+                  <g class="car-explorer__part" data-part="telemetry">
+                    <rect class="car-explorer__zone" x="20" y="165" width="276" height="70" />
+                    <g id="car-telemetry">
+                      <path class="car-explorer__dash" d="M100 196L330 180L452 112L620 104L796 170" />
+                      <circle cx="330" cy="180" r="3.5" />
+                      <circle cx="452" cy="112" r="3.5" />
+                      <circle cx="620" cy="104" r="3.5" />
+                      <circle cx="796" cy="170" r="3.5" />
+                    </g>
+                    <use href="#car-telemetry" transform="matrix(1 0 0 -1 0 400)" />
+                    <path d="M60 200H22M110 30V194" />
+                  </g>
+                </svg>
+
+                <!-- Maus und Touch; für die Tastatur gibt es die beschrifteten Schalter darunter -->
+                <button class="car-explorer__hotspot car-explorer__hotspot--telemetry" type="button" data-part="telemetry" tabindex="-1" aria-hidden="true">2</button>
+                <button class="car-explorer__hotspot car-explorer__hotspot--cockpit" type="button" data-part="cockpit" tabindex="-1" aria-hidden="true">4</button>
+                <button class="car-explorer__hotspot car-explorer__hotspot--power" type="button" data-part="power" tabindex="-1" aria-hidden="true">1</button>
+                <button class="car-explorer__hotspot car-explorer__hotspot--chassis" type="button" data-part="chassis" tabindex="-1" aria-hidden="true">3</button>
+              </div>
+
+              <div class="car-explorer__tabs" role="group" aria-label="Bauteil wählen">
+                <button class="car-explorer__tab" type="button" data-part="power" aria-pressed="false" aria-controls="part-power">
+                  <span class="car-explorer__tab-number" aria-hidden="true">1</span>
+                  Antrieb
+                </button>
+                <button class="car-explorer__tab" type="button" data-part="telemetry" aria-pressed="false" aria-controls="part-telemetry">
+                  <span class="car-explorer__tab-number" aria-hidden="true">2</span>
+                  Telemetrie
+                </button>
+                <button class="car-explorer__tab" type="button" data-part="chassis" aria-pressed="false" aria-controls="part-chassis">
+                  <span class="car-explorer__tab-number" aria-hidden="true">3</span>
+                  Chassis
+                </button>
+                <button class="car-explorer__tab" type="button" data-part="cockpit" aria-pressed="false" aria-controls="part-cockpit">
+                  <span class="car-explorer__tab-number" aria-hidden="true">4</span>
+                  Cockpit
+                </button>
+              </div>
+            </div>
           </div>
+
+          <div class="car-explorer__panels" aria-live="polite">
+            <div class="car-explorer__panel" id="part-power" data-panel="power">
+              <h3 class="car-explorer__title">Rollhockey in der Schweizer Nationalmannschaft</h3>
+              <p class="car-explorer__text">
+                Der Spitzensport ist mein Antrieb. Er hat Disziplin, Belastbarkeit und
+                Durchhaltevermögen geprägt, die ich auch in den Beruf mitnehme.
+              </p>
+            </div>
+            <div class="car-explorer__panel" id="part-telemetry" data-panel="telemetry" hidden>
+              <h3 class="car-explorer__title">Junior Finance &amp; Power BI Specialist</h3>
+              <p class="car-explorer__text">
+                Wie die Telemetrie am Auto: Ich lese Daten, bereite komplexe Sachverhalte
+                verständlich auf und schaffe fundierte Entscheidungsgrundlagen.
+              </p>
+            </div>
+            <div class="car-explorer__panel" id="part-chassis" data-panel="chassis" hidden>
+              <h3 class="car-explorer__title">Bankausbildung und Beratungserfahrung</h3>
+              <p class="car-explorer__text">
+                Das Fundament, das alles trägt: eine kaufmännische Bankausbildung und mehrjährige
+                Erfahrung in der Beratung.
+              </p>
+            </div>
+            <div class="car-explorer__panel" id="part-cockpit" data-panel="cockpit" hidden>
+              <h3 class="car-explorer__title">Student BSc Wirtschaftsinformatik</h3>
+              <p class="car-explorer__text">
+                Hier laufen die Fäden zusammen: Im Studium verbinde ich Wirtschaft und Technik
+                und arbeite analytisch und strukturiert.
+              </p>
+            </div>
+          </div>
+
           <div class="about__media">
             <div class="about__frame">
             <!-- Weitere Fotos als zusätzliche <img class="slideshow__slide"> anhängen -->

@@ -15,7 +15,6 @@
   --color-accent-soft: rgb(39 244 210 / 0.12);
   --color-on-accent: #04110e;
   --color-blueprint: #66727a;
-  --color-veil: rgb(7 9 10 / 0.8);
   /* Diagrammfarben: Helligkeit trennt die Reihen auch bei Farbenblindheit, Kontrast mindestens 3:1 */
   --color-chart-race: var(--color-accent);
   --color-chart-sprint: #707c85;
@@ -92,7 +91,7 @@ body {
   overflow-wrap: break-word;
 }
 
-/* Bauplan als fester Seitenhintergrund; schmale Bildschirme dämpfen ihn, weil Text darüber liegt */
+/* Bauplan als fester Seitenhintergrund; so schwach, dass Text überall darauf stehen kann */
 body::before {
   content: "";
   position: fixed;
@@ -101,20 +100,7 @@ body::before {
   background:
     url("./images/blueprint.svg") 72% center / cover no-repeat,
     linear-gradient(100deg, var(--color-accent-soft), transparent 55%);
-  opacity: 0.4;
-}
-
-/* Inhalte brauchen Ruhe: dort bleibt der Bauplan so dezent wie ein Raster */
-.section,
-.site-footer,
-.telemetry {
-  background-color: var(--color-veil);
-}
-
-/* Schleier bis zum Fensterrand, der Inhalt bleibt in der Spalte */
-.telemetry {
-  box-shadow: 0 0 0 100vmax var(--color-veil);
-  clip-path: inset(0 -100vmax);
+  opacity: 0.16;
 }
 
 main {
@@ -234,11 +220,14 @@ ol {
   position: sticky;
   top: 0;
   z-index: 50;
-  background-color: var(--color-bg);
-  transition: box-shadow var(--transition);
+  transition:
+    background-color var(--transition),
+    box-shadow var(--transition);
 }
 
+/* Erst beim Scrollen läuft Inhalt unter dem Menü durch und braucht Deckung */
 .site-header--scrolled {
+  background-color: var(--color-bg);
   box-shadow: var(--shadow-header);
 }
 
@@ -371,6 +360,11 @@ ol {
   gap: var(--space-xl);
 }
 
+/* Text mittig im freien Raum, der Live-Streifen bleibt am Fuss */
+.landing__intro {
+  margin-block: auto;
+}
+
 .landing__title {
   font-size: var(--fs-display);
   font-weight: 700;
@@ -410,56 +404,6 @@ ol {
   align-items: center;
   gap: var(--space-sm);
   margin-top: var(--space-lg);
-}
-
-/* Stückliste als Schriftfeld */
-.parts {
-  border: 1px solid var(--color-border);
-  background-color: var(--color-bg);
-}
-
-.parts__title {
-  padding: var(--space-xs) var(--space-sm);
-  border-bottom: 1px solid var(--color-border);
-  font-size: var(--fs-sm);
-  font-weight: 500;
-  color: var(--color-text-muted);
-}
-
-.parts__link {
-  display: grid;
-  grid-template-columns: 1.5rem minmax(0, 1fr);
-  column-gap: var(--space-sm);
-  padding: var(--space-xs) var(--space-sm);
-  transition: background-color var(--transition);
-}
-
-li:not(:last-child) > .parts__link {
-  border-bottom: 1px solid var(--color-border);
-}
-
-.parts__link:hover,
-.parts__link:focus-visible {
-  background-color: var(--color-accent-soft);
-}
-
-.parts__position {
-  grid-row: span 2;
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-  line-height: 1.75;
-  color: var(--color-text-muted);
-}
-
-.parts__name {
-  font-weight: 600;
-  font-stretch: 112%;
-}
-
-.parts__spec {
-  font-size: var(--fs-sm);
-  line-height: 1.4;
-  color: var(--color-text-muted);
 }
 
 /* Live-Streifen mit Daten aus der F1-API */
@@ -1159,45 +1103,214 @@ li:not(:last-child) > .parts__link {
   align-items: center;
 }
 
-/* Profil: dieselben Positionen wie die Stückliste auf der Landing */
-.profile {
+/* Klickbares F1-Auto: Bauteil wählen, Text erscheint darunter */
+.car-explorer__controls {
   margin-top: var(--space-lg);
-  border-bottom: 1px solid var(--color-border);
 }
 
-.profile__item {
-  display: grid;
-  grid-template-columns: 1.5rem minmax(0, 1fr);
-  column-gap: var(--space-sm);
-  padding: var(--space-sm);
-  border-top: 1px solid var(--color-border);
-  scroll-margin-top: calc(var(--header-height) + var(--space-md));
-  transition: background-color var(--transition);
+.car-explorer__hint {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--color-accent);
 }
 
-/* Angesprungen aus der Stückliste */
-.profile__item:target {
-  background-color: var(--color-accent-soft);
+.car-explorer__stage {
+  position: relative;
+  aspect-ratio: 1000 / 400;
+  margin-top: var(--space-lg);
 }
 
-.profile__position {
-  grid-row: span 2;
+.car-explorer__car {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  color: var(--color-text-muted);
+}
+
+.car-explorer__axis {
+  stroke-dasharray: 16 4 2 4;
+  stroke-width: 0.75;
+}
+
+.car-explorer__dash {
+  stroke-dasharray: 6 5;
+}
+
+/* Unsichtbare Fläche: die feinen Linien allein wären kaum zu treffen */
+.car-explorer__zone {
+  fill: transparent;
+  stroke: none;
+  pointer-events: all;
+  cursor: pointer;
+}
+
+.car-explorer__part {
+  transition: color var(--transition);
+}
+
+.car-explorer__part:hover {
+  color: var(--color-accent-hover);
+}
+
+.car-explorer__part[data-active] {
+  color: var(--color-accent);
+}
+
+.car-explorer__hotspot {
+  position: absolute;
+  top: 5%;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 50%;
+  background-color: var(--color-bg);
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
-  line-height: 1.75;
-  color: var(--color-text-muted);
+  color: var(--color-accent);
+  transform: translate(-50%, -50%);
+  transition:
+    background-color var(--transition),
+    color var(--transition);
 }
 
-.profile__name {
-  font-size: var(--fs-base);
+.car-explorer__hotspot--telemetry {
+  left: 11%;
+}
+
+.car-explorer__hotspot--cockpit {
+  left: 40%;
+}
+
+.car-explorer__hotspot--power {
+  left: 59%;
+}
+
+.car-explorer__hotspot--chassis {
+  left: 73%;
+}
+
+.car-explorer__hotspot:hover,
+.car-explorer__hotspot[data-active] {
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.car-explorer__tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-xs);
+  margin-top: var(--space-md);
+}
+
+.car-explorer__tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-height: 3rem;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-blueprint);
+  border-radius: var(--radius-sm);
   font-weight: 600;
   font-stretch: 112%;
+  transition:
+    background-color var(--transition),
+    border-color var(--transition),
+    color var(--transition);
 }
 
-.profile__text {
-  font-size: var(--fs-sm);
-  color: var(--color-text-muted);
+.car-explorer__tab:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
+
+.car-explorer__tab[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.car-explorer__tab-number {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+/* Feste Mindesthöhe, damit die Seite beim Wechsel nicht springt */
+.car-explorer__panels {
+  min-height: 16.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+}
+
+.car-explorer__panel {
+  padding: var(--space-lg);
+}
+
+.car-explorer__title {
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  font-stretch: 112%;
+  line-height: 1.3;
+}
+
+.car-explorer__text {
+  max-width: 40rem;
+  margin-top: var(--space-xs);
+  font-size: var(--fs-lg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Pulsiert, bis das erste Bauteil angeklickt wurde: zeigt, dass man klicken kann */
+  .car-explorer:not(.car-explorer--touched) .car-explorer__hotspot {
+    animation: car-explorer-pulse 2s ease-out infinite;
+  }
+
+  .car-explorer--drawing .car-explorer__draw {
+    stroke-dasharray: 1;
+    animation: car-explorer-draw 1600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .car-explorer__panel {
+    animation: car-explorer-reveal 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes car-explorer-pulse {
+  from {
+    box-shadow: 0 0 0 0 rgb(39 244 210 / 0.5);
+  }
+
+  to {
+    box-shadow: 0 0 0 0.75rem rgb(39 244 210 / 0);
+  }
+}
+
+@keyframes car-explorer-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes car-explorer-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(0.25rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 
 /* Feste Höhe, damit der Text beim Bildwechsel nicht springt */
 .about__media {
@@ -1403,17 +1516,16 @@ li:not(:last-child) > .parts__link {
     transform: translateX(-50%);
   }
 
-  .parts__list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .car-explorer__tabs {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .parts__list li:nth-child(odd) {
-    border-right: 1px solid var(--color-border);
+  .car-explorer__car {
+    stroke-width: 1.5;
   }
 
-  .parts__list li:nth-last-child(-n + 2) > .parts__link {
-    border-bottom: none;
+  .car-explorer__panels {
+    min-height: 12rem;
   }
 
   .telemetry {
@@ -1446,21 +1558,6 @@ li:not(:last-child) > .parts__link {
     --fs-display: min(6rem, 5.4vw);
   }
 
-  body::before {
-    opacity: 0.8;
-  }
-
-  /* Text links, Stückliste rechts unten über dem Bauplan, Live-Daten am Fuss */
-  .landing__inner {
-    display: grid;
-    grid-template-columns: minmax(0, 1.7fr) minmax(18rem, 1fr);
-    grid-template-rows: 1fr auto;
-    grid-template-areas:
-      "intro parts"
-      "telemetry telemetry";
-    gap: var(--space-md) var(--space-xl);
-  }
-
   .about__media {
     justify-items: end;
   }
@@ -1483,42 +1580,32 @@ li:not(:last-child) > .parts__link {
     grid-column: 1 / -1;
   }
 
-  .landing__intro {
-    grid-area: intro;
-    align-self: center;
-  }
-
   .landing__name {
     display: inline;
   }
 
-  .parts {
-    grid-area: parts;
-    align-self: end;
-  }
-
-  .parts__list {
-    display: block;
-  }
-
-  .parts__list li:nth-child(odd) {
-    border-right: none;
-  }
-
-  .parts__list li:nth-last-child(2) > .parts__link {
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .telemetry {
-    grid-area: telemetry;
-  }
-
+  /* Auto und Text nebeneinander: nach dem Klick muss niemand scrollen */
   .about {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "main panels"
+      "main media";
+    align-items: start;
+  }
+
+  .about__main {
+    grid-area: main;
+  }
+
+  .car-explorer__panels {
+    grid-area: panels;
+    min-height: 15rem;
   }
 
   .about__media {
-    --slide-max-height: min(32rem, 60vh);
+    grid-area: media;
+    --slide-max-height: min(26rem, 50vh);
   }
 
   /* Rennliste links, Strecke in der Mitte, Countdown rechts */
