@@ -5,6 +5,7 @@ import {
   getSeasonSprints,
   getSeasonQualifying,
 } from "./f1-api.js";
+import { SEASON_CHANGE } from "./f1-season.js";
 
 // Dynamisch geladen: fällt das CDN aus, bleibt der Rest der Seite funktionsfähig
 const D3_URL = "https://cdn.jsdelivr.net/npm/d3@7.9.0/+esm";
@@ -293,11 +294,12 @@ function render(d3, canvas, tooltip, rows, animate) {
  * Fahrerübersicht: Punkte des gewählten Fahrers pro Rennen (Rennen und Sprint),
  * darunter der Vergleich mit dem Teamkollegen in Qualifying und Rennen.
  */
-export async function initF1Chart() {
+export function initF1Chart() {
   const root = document.querySelector("[data-f1-chart]");
   if (!root) return;
 
   const status = root.querySelector("[data-status]");
+  const title = root.querySelector("[data-title]");
   const select = root.querySelector("[data-driver-select]");
   const canvas = root.querySelector("[data-canvas]");
   const tooltip = root.querySelector("[data-tooltip]");
@@ -308,48 +310,22 @@ export async function initF1Chart() {
   let standings;
   let races;
   let season;
-  try {
-    let results;
-    let sprints;
-    let qualifying;
-    [d3, standings, races, results, sprints, qualifying] = await Promise.all([
-      import(D3_URL),
-      getDriverStandings(),
-      getSeasonRaces(),
-      getSeasonResults(),
-      getSeasonSprints(),
-      getSeasonQualifying(),
-    ]);
-    // Je Runde alle Fahrer: daraus ergeben sich Punkte und die Teambesetzung pro Rennen
-    const byRound = (list, key) => new Map(list.map((race) => [race.round, race[key]]));
-    season = {
-      race: byRound(results, "Results"),
-      sprint: byRound(sprints, "SprintResults"),
-      qualifying: byRound(qualifying, "QualifyingResults"),
-    };
-  } catch {
-    status.textContent = "Das Diagramm konnte gerade nicht geladen werden.";
-    return;
-  }
-
-  // Nur Runden mit Ergebnis – am Sprint-Samstag zählt schon der Sprint
-  races = races.filter((race) => season.race.has(race.round) || season.sprint.has(race.round));
-  if (!standings.length || !races.length) {
-    status.textContent = "In dieser Saison wurden noch keine Punkte vergeben.";
-    return;
-  }
-
-  select.replaceChildren(
-    ...standings.map(({ Driver }) => {
-      const option = document.createElement("option");
-      option.value = Driver.driverId;
-      option.textContent = `${Driver.givenName} ${Driver.familyName}`;
-      return option;
-    }),
-  );
-  select.disabled = false;
-
   let rows = [];
+  let chosenDriver;
+  let loadId = 0;
+
+  const showMessage = (message) => {
+    rows = [];
+    title.textContent = "Fahrerübersicht";
+    summary.textContent = "";
+    status.textContent = message;
+    status.hidden = false;
+    canvas.hidden = true;
+    tooltip.hidden = true;
+    headToHead.hidden = true;
+    select.replaceChildren();
+    select.disabled = true;
+  };
 
   /** Teamvergleich: links der gewählte Fahrer, rechts das zweite Cockpit des Teams. */
   const showHeadToHead = (driverId, driverName) => {
@@ -386,6 +362,7 @@ export async function initF1Chart() {
 
   const showDriver = () => {
     const driverId = select.value;
+    chosenDriver = driverId;
     rows = toRows(season, driverId, races);
     const driverName = standings.find((standing) => standing.Driver.driverId === driverId).Driver.familyName;
     showHeadToHead(driverId, driverName);
@@ -417,5 +394,59 @@ export async function initF1Chart() {
     if (rows.length && !canvas.hidden) render(d3, canvas, tooltip, rows, false);
   }).observe(canvas);
 
-  showDriver();
+  const load = async (requested) => {
+    const id = ++loadId;
+    showMessage("Fahrerdaten werden geladen …");
+
+    let loaded;
+    try {
+      loaded = await Promise.all([
+        import(D3_URL),
+        getDriverStandings(requested),
+        getSeasonRaces(requested),
+        getSeasonResults(requested),
+        getSeasonSprints(requested),
+        getSeasonQualifying(requested),
+      ]);
+    } catch {
+      if (id === loadId) showMessage("Das Diagramm konnte gerade nicht geladen werden.");
+      return;
+    }
+    if (id !== loadId) return;
+
+    const [module, loadedStandings, loadedRaces, results, sprints, qualifying] = loaded;
+    // Je Runde alle Fahrer: daraus ergeben sich Punkte und die Teambesetzung pro Rennen
+    const byRound = (list, key) => new Map(list.map((race) => [race.round, race[key]]));
+    d3 = module;
+    standings = loadedStandings;
+    season = {
+      race: byRound(results, "Results"),
+      sprint: byRound(sprints, "SprintResults"),
+      qualifying: byRound(qualifying, "QualifyingResults"),
+    };
+
+    // Nur Runden mit Ergebnis – am Sprint-Samstag zählt schon der Sprint
+    races = loadedRaces.filter((race) => season.race.has(race.round) || season.sprint.has(race.round));
+    if (!standings.length || !races.length) {
+      showMessage("In dieser Saison wurden noch keine Punkte vergeben.");
+      return;
+    }
+
+    title.textContent = `Fahrerübersicht ${races[0].season}`;
+    select.replaceChildren(
+      ...standings.map(({ Driver }) => {
+        const option = document.createElement("option");
+        option.value = Driver.driverId;
+        option.textContent = `${Driver.givenName} ${Driver.familyName}`;
+        return option;
+      }),
+    );
+    select.disabled = false;
+    // Wer auch in der anderen Saison gefahren ist, bleibt gewählt
+    if (standings.some(({ Driver }) => Driver.driverId === chosenDriver)) select.value = chosenDriver;
+    showDriver();
+  };
+
+  document.addEventListener(SEASON_CHANGE, ({ detail }) => load(detail));
+  load();
 }

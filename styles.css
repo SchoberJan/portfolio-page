@@ -525,10 +525,53 @@ ol {
   margin-top: var(--space-xl);
 }
 
+/* Feste Mindesthöhe: die Saisonauswahl erscheint erst mit den Daten und darf nichts verschieben */
+.interest__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs) var(--space-md);
+  min-height: 2.75rem;
+}
+
 .interest__title {
   font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.015em;
+}
+
+/* Saisonauswahl für Kalender und Diagramm */
+.season-switch {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.season-switch__button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding-inline: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+  transition:
+    border-color var(--transition),
+    color var(--transition);
+}
+
+.season-switch__button:hover {
+  border-color: var(--color-accent-hover);
+  color: var(--color-accent-hover);
+}
+
+.season-switch__button[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 /* F1-Countdown: Datum gross, darunter Countdown, rechts die Streckenform */

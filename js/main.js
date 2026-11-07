@@ -6,6 +6,7 @@ import { initF1Countdown } from "./f1-countdown.js";
 import { initF1Chart } from "./f1-chart.js";
 import { initF1Telemetry } from "./f1-telemetry.js";
 import { initCarExplorer } from "./car-explorer.js";
+import { initSeasonSwitch } from "./f1-season.js";
 
 initHeader();
 initNavigation();
@@ -14,4 +15,5 @@ initFooter();
 initF1Countdown();
 initF1Chart();
 initF1Telemetry();
+initSeasonSwitch();
 initCarExplorer();

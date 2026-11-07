@@ -1,5 +1,6 @@
 import { getSeasonRaces, getPodium } from "./f1-api.js";
 import { getCircuitOutline } from "./circuit-map.js";
+import { SEASON_CHANGE } from "./f1-season.js";
 
 const TIME_ZONE = "Europe/Zurich";
 const SESSIONS = [
@@ -119,36 +120,23 @@ function createPodiumItem(result) {
  * Zeigt den Rennkalender der Saison: links die Rennliste, in der Mitte die
  * Streckenform und rechts den Countdown bzw. bei gefahrenen Rennen die Top 3.
  */
-export async function initF1Countdown() {
+export function initF1Countdown() {
   const root = document.querySelector("[data-f1-countdown]");
   if (!root) return;
 
   const status = root.querySelector("[data-status]");
   const field = (name) => root.querySelector(`[data-${name}]`);
-
-  let races;
-  try {
-    races = await getSeasonRaces();
-  } catch {
-    status.textContent = "Der Rennkalender konnte gerade nicht geladen werden.";
-    return;
-  }
-  if (!races.length) {
-    status.textContent = "Für diese Saison sind noch keine Rennen geplant.";
-    return;
-  }
-
   const list = field("race-list");
   const toggle = field("race-toggle");
-  const items = races.map(createRaceButton);
-  list.replaceChildren(...items);
 
-  // Standardmässig das nächste Rennen, nach Saisonende das letzte
-  const nextIndex = races.findIndex((race) => !isFinished(race));
-  let selected = nextIndex === -1 ? races.length - 1 : nextIndex;
+  let season;
+  let races = [];
+  let items = [];
+  let selected = 0;
   let expanded = false;
   let timer;
   let showId = 0;
+  let loadId = 0;
 
   /** Zugeklappt sind nur das gewählte Rennen und seine Nachbarn sichtbar. */
   const updateList = () => {
@@ -209,7 +197,7 @@ export async function initF1Countdown() {
 
     let results;
     try {
-      results = await getPodium(race.round);
+      results = await getPodium(race.round, season);
     } catch {
       if (id === showId) resultStatus.textContent = "Das Ergebnis konnte gerade nicht geladen werden.";
       return;
@@ -275,7 +263,42 @@ export async function initF1Countdown() {
   });
   toggle.addEventListener("click", () => setExpanded(!expanded));
 
-  showRace();
-  status.hidden = true;
-  field("body").hidden = false;
+  const showMessage = (message) => {
+    clearInterval(timer);
+    status.textContent = message;
+    status.hidden = false;
+    field("body").hidden = true;
+  };
+
+  /** Der bisherige Kalender bleibt stehen, bis die neue Saison da ist. */
+  const load = async (requested) => {
+    const id = ++loadId;
+    let loaded;
+    try {
+      loaded = await getSeasonRaces(requested);
+    } catch {
+      if (id === loadId) showMessage("Der Rennkalender konnte gerade nicht geladen werden.");
+      return;
+    }
+    if (id !== loadId) return;
+    if (!loaded.length) {
+      showMessage("Für diese Saison sind noch keine Rennen geplant.");
+      return;
+    }
+
+    season = requested;
+    races = loaded;
+    items = races.map(createRaceButton);
+    list.replaceChildren(...items);
+    // Standardmässig das nächste Rennen, nach Saisonende das letzte
+    const nextIndex = races.findIndex((race) => !isFinished(race));
+    selected = nextIndex === -1 ? races.length - 1 : nextIndex;
+    setExpanded(false);
+    showRace();
+    status.hidden = true;
+    field("body").hidden = false;
+  };
+
+  document.addEventListener(SEASON_CHANGE, ({ detail }) => load(detail));
+  load();
 }

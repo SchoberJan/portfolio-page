@@ -375,7 +375,29 @@
           </p>
 
           <article class="interest" aria-labelledby="f1-title">
-            <h3 class="interest__title" id="f1-title">Formel 1</h3>
+            <div class="interest__header">
+              <h3 class="interest__title" id="f1-title">Formel 1</h3>
+              <div
+                class="season-switch"
+                role="group"
+                aria-label="Saison wählen"
+                data-season-switch
+                hidden
+              >
+                <button
+                  class="season-switch__button"
+                  type="button"
+                  aria-pressed="true"
+                  data-season="current"
+                ></button>
+                <button
+                  class="season-switch__button"
+                  type="button"
+                  aria-pressed="false"
+                  data-season="last"
+                ></button>
+              </div>
+            </div>
             <div class="countdown" data-f1-countdown>
               <p class="countdown__status" data-status>
                 Rennkalender wird geladen …
@@ -448,7 +470,7 @@
             <div class="driver-chart" data-f1-chart>
               <div class="driver-chart__header">
                 <div>
-                  <h4 class="driver-chart__title">Fahrerübersicht</h4>
+                  <h4 class="driver-chart__title" data-title>Fahrerübersicht</h4>
                   <p class="driver-chart__summary" data-summary></p>
                 </div>
                 <label class="driver-chart__picker">
