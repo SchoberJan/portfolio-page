@@ -16,6 +16,7 @@
   --color-on-accent: #04110e;
   --color-blueprint: #66727a;
   --blueprint: url("./images/blueprint.svg") 72% center / cover no-repeat;
+  --blueprint-opacity: 0.11;
   --blueprint-tint: linear-gradient(100deg, var(--color-accent-soft), transparent 55%);
   /* Diagrammfarben: Helligkeit trennt die Reihen auch bei Farbenblindheit, Kontrast mindestens 3:1 */
   --color-chart-race: var(--color-accent);
@@ -100,7 +101,7 @@ body::before {
   inset: 0;
   z-index: -1;
   background: var(--blueprint), var(--blueprint-tint);
-  opacity: 0.16;
+  opacity: var(--blueprint-opacity);
 }
 
 main {
@@ -236,7 +237,7 @@ ol {
   inset: 0;
   z-index: -1;
   background:
-    linear-gradient(rgb(7 9 10 / 0.84), rgb(7 9 10 / 0.84)),
+    linear-gradient(rgb(7 9 10 / calc(1 - var(--blueprint-opacity))) 0 0),
     var(--blueprint),
     var(--blueprint-tint),
     var(--color-bg);
@@ -1230,7 +1231,7 @@ ol {
 .car-explorer__panels {
   display: flex;
   align-items: center;
-  min-height: 19rem;
+  min-height: 22rem;
   scroll-margin-block: calc(var(--header-height) + var(--space-md)) var(--space-md);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -1427,7 +1428,7 @@ ol {
   }
 
   .car-explorer__panels {
-    min-height: 12rem;
+    min-height: 14rem;
   }
 
   .telemetry {
@@ -1494,13 +1495,19 @@ ol {
 
   .car-explorer__panels {
     grid-area: panels;
-    min-height: 16rem;
+    min-height: 24rem;
   }
   /* Rennliste links, Strecke in der Mitte, Countdown rechts */
   .countdown__body {
     grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1.3fr);
     grid-template-areas: "list track details";
     align-items: start;
+  }
+}
+
+@media (min-width: 1280px) {
+  .car-explorer__panels {
+    min-height: 23rem;
   }
 }
 
