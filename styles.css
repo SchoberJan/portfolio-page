@@ -685,8 +685,8 @@ ol {
 
 .sessions__item {
   display: grid;
-  grid-column: 1 / -1;
-  grid-template-columns: subgrid;
+  font-size: var(--fs-sm);
+  line-height: 1.3;
   color: var(--color-text-muted);
 }
 
@@ -732,7 +732,7 @@ ol {
   justify-self: center;
   align-self: center;
   width: 100%;
-  max-width: 14rem;
+  max-width: 18rem;
 }
 
 .countdown__track svg {
@@ -743,8 +743,6 @@ ol {
 
 .countdown__track path {
   fill: none;
-  stroke: var(--color-text-muted);
-  stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
@@ -822,6 +820,11 @@ ol {
   color: var(--color-text-muted);
 }
 
+.driver-chart__summary {
+  font-size: var(--fs-base);
+  color: var(--color-text);
+}
+
 .driver-chart__picker {
   display: grid;
   gap: 0.25rem;
@@ -864,16 +867,14 @@ ol {
   padding: 0.375rem var(--space-sm);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  color: var(--color-text-muted);
+  color: var(--color-text);
   transition:
     background-color 150ms ease,
-    border-color 150ms ease,
-    color 150ms ease;
+    border-color 150ms ease;
 }
 
 .driver-chart__legend-item:hover {
   border-color: var(--color-text-muted);
-  color: var(--color-text);
 }
 
 .driver-chart__legend-item[aria-pressed="true"] {
@@ -914,16 +915,28 @@ ol {
 }
 
 .driver-chart__grid .driver-chart__tick--max text {
-  font-weight: 600;
+  font-weight: 700;
   fill: var(--color-text);
 }
 
 .driver-chart__grid text,
 .driver-chart__axis text {
   font-family: var(--font-mono);
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
+  fill: var(--color-text);
+}
+
+.driver-chart__label {
+  font-size: var(--fs-sm);
   fill: var(--color-text-muted);
+}
+
+.driver-chart__label--max {
+  font-weight: 500;
+  text-anchor: end;
+  fill: var(--color-text);
 }
 
 .driver-chart__axis .domain {
@@ -1043,7 +1056,7 @@ ol {
 .head-to-head__note {
   grid-column: 1 / -1;
   margin-top: -0.25rem;
-  font-size: 0.75rem;
+  font-size: var(--fs-sm);
   color: var(--color-text-muted);
   text-align: right;
 }

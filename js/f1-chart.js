@@ -8,7 +8,11 @@ import {
 
 // Dynamisch geladen: fällt das CDN aus, bleibt der Rest der Seite funktionsfähig
 const D3_URL = "https://cdn.jsdelivr.net/npm/d3@7.9.0/+esm";
-const MARGIN = { top: 12, right: 4, bottom: 28, left: 32 };
+// Oben Platz für die Beschriftung über der Maximum-Linie
+const MARGIN = { top: 32, right: 4, bottom: 32, left: 34 };
+const LABEL_GAP = 8;
+// Mindestabstand von Kürzel zu Kürzel auf der x-Achse
+const MIN_LABEL_STEP = 30;
 const SEGMENT_GAP = 2;
 // Maximum eines Wochenendes: Rennsieg (25) + Sprintsieg (8); seit 2025 kein Punkt mehr für die schnellste Runde
 const MAX_WEEKEND_POINTS = 33;
@@ -138,7 +142,7 @@ function describe(row) {
 /** Gestapeltes Balkendiagramm: Rennpunkte unten, Sprintpunkte oben drauf. */
 function render(d3, canvas, tooltip, rows, animate) {
   const width = canvas.clientWidth;
-  const height = Math.round(Math.min(320, Math.max(220, width * 0.45)));
+  const height = Math.round(Math.min(380, Math.max(280, width * 0.45)));
   const total = (row) => row.racePoints + row.sprintPoints;
   // Ein offener Tooltip würde sonst noch die Werte des vorherigen Fahrers zeigen
   tooltip.hidden = true;
@@ -165,6 +169,8 @@ function render(d3, canvas, tooltip, rows, animate) {
       root.append("g").attr("class", "driver-chart__grid");
       root.append("g").attr("class", "driver-chart__axis driver-chart__axis--x");
       root.append("g").attr("class", "driver-chart__rounds");
+      root.append("text").attr("class", "driver-chart__label driver-chart__label--unit").text("Punkte");
+      root.append("text").attr("class", "driver-chart__label driver-chart__label--max").text("Maximum pro Wochenende");
       return root;
     })
     .attr("width", width)
@@ -178,8 +184,18 @@ function render(d3, canvas, tooltip, rows, animate) {
     .call((grid) => grid.select(".domain").remove())
     .call((grid) => grid.selectAll(".tick").classed("driver-chart__tick--max", (value) => value === maxPoints));
 
-  // Ist zu wenig Platz für alle Kürzel, nur jedes zweite beschriften
-  const tickValues = x.step() < 30 ? x.domain().filter((_, index) => index % 2 === 0) : x.domain();
+  svg
+    .select(".driver-chart__label--unit")
+    .attr("x", MARGIN.left)
+    .attr("y", y(maxPoints) - LABEL_GAP);
+  svg
+    .select(".driver-chart__label--max")
+    .attr("x", width - MARGIN.right)
+    .attr("y", y(maxPoints) - LABEL_GAP);
+
+  // Ist zu wenig Platz für alle Kürzel, nur jedes zweite oder dritte beschriften
+  const labelEvery = Math.ceil(MIN_LABEL_STEP / x.step());
+  const tickValues = x.domain().filter((_, index) => index % labelEvery === 0);
   const codes = new Map(rows.map((row) => [row.round, row.code]));
   svg
     .select(".driver-chart__axis--x")
