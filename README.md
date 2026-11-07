@@ -31,7 +31,9 @@ https://schoberjan.github.io/portfolio-page/
 
 **Problem:** Die API führt die laufende Saison unter `current`. Wann dieser Wert auf das neue Jahr wechselt, gibt sie nicht bekannt. Sobald das passiert, gibt es noch keine Ergebnisse: Das Diagramm wäre leer, und die abgeschlossene Saison wäre auf der Seite nicht mehr zu sehen.
 
-**Lösung:** Eine Auswahl neben dem Titel «Formel 1» schaltet Rennkalender und Diagramm zwischen der laufenden und der letzten Saison um. Die letzte Saison berechnet die Seite aus dem Jahr, das `current` meldet. Wechselt die API auf 2027, stehen ohne Änderung am Code 2027 und 2026 zur Auswahl. Der Live-Streifen im Startbereich zeigt immer die laufende Saison.
+**Lösung:** Eine Auswahl neben dem Titel «Formel 1» schaltet Rennkalender und Diagramm zwischen der laufenden und der letzten Saison um. Die letzte Saison berechnet die Seite aus dem Jahr, das `current` meldet. Wechselt die API auf 2027, stehen ohne Änderung am Code 2027 und 2026 zur Auswahl. Der Live-Streifen im Startbereich zeigt immer die laufende Saison. Die Daten der letzten Saison werden erst geladen, wenn sie gewählt wird; das schont das Rate-Limit.
+
+**Wartezeit:** Das Diagramm braucht fünf Datensätze. Fünf Startlichter zeigen den echten Fortschritt: Jeder angekommene Datensatz schaltet ein Licht ein, das nächste pulsiert, und wenn alle ausgehen, erscheint das Diagramm. Dauert es wegen einer Sperre der API länger, sagt ein Hinweis das nach fünf Sekunden.
 
 **Offen:** Nach dem letzten Rennen von 2026 am 6. Dezember gibt es keinen Countdown mehr, bis die API den Kalender 2027 liefert. Am 7. November 2026 lieferte sie für 2027 noch keine Rennen, obwohl der offizielle Kalender bereits veröffentlicht war.
 
