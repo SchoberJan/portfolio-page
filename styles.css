@@ -15,6 +15,8 @@
   --color-accent-soft: rgb(39 244 210 / 0.12);
   --color-on-accent: #04110e;
   --color-blueprint: #66727a;
+  --blueprint: url("./images/blueprint.svg") 72% center / cover no-repeat;
+  --blueprint-tint: linear-gradient(100deg, var(--color-accent-soft), transparent 55%);
   /* Diagrammfarben: Helligkeit trennt die Reihen auch bei Farbenblindheit, Kontrast mindestens 3:1 */
   --color-chart-race: var(--color-accent);
   --color-chart-sprint: #707c85;
@@ -97,9 +99,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background:
-    url("./images/blueprint.svg") 72% center / cover no-repeat,
-    linear-gradient(100deg, var(--color-accent-soft), transparent 55%);
+  background: var(--blueprint), var(--blueprint-tint);
   opacity: 0.16;
 }
 
@@ -220,15 +220,32 @@ ol {
   position: sticky;
   top: 0;
   z-index: 50;
-  transition:
-    background-color var(--transition),
-    box-shadow var(--transition);
+  transition: box-shadow var(--transition);
 }
 
-/* Erst beim Scrollen läuft Inhalt unter dem Menü durch und braucht Deckung */
 .site-header--scrolled {
-  background-color: var(--color-bg);
   box-shadow: var(--shadow-header);
+}
+
+/* Deckt durchlaufenden Inhalt mit demselben Blatt ab: kein Balken, der Bauplan läuft weiter.
+   Der feste Ausschnitt liegt deckungsgleich auf dem Seitenhintergrund. */
+.site-header--scrolled::before,
+.site-header:has(.site-nav--open)::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(rgb(7 9 10 / 0.84), rgb(7 9 10 / 0.84)),
+    var(--blueprint),
+    var(--blueprint-tint),
+    var(--color-bg);
+  clip-path: inset(0 0 calc(100% - var(--header-height)) 0);
+}
+
+/* Das offene Menü liegt auf demselben Blatt über der ganzen Seite */
+.site-header:has(.site-nav--open)::before {
+  clip-path: none;
 }
 
 .site-header__inner {
@@ -289,8 +306,6 @@ ol {
   left: 0;
   right: 0;
   padding: var(--space-xs) var(--container-padding) var(--space-lg);
-  background-color: var(--color-bg);
-  border-bottom: 1px solid var(--color-border);
   visibility: hidden;
   opacity: 0;
   transform: translateY(-0.5rem);
@@ -630,7 +645,7 @@ ol {
 }
 
 .countdown__months {
-  font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+  font-size: var(--fs-h2);
 }
 
 .countdown__race,
@@ -905,7 +920,7 @@ ol {
 .driver-chart__grid text,
 .driver-chart__axis text {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--fs-xs);
   font-variant-numeric: tabular-nums;
   fill: var(--color-text-muted);
 }
@@ -975,12 +990,11 @@ ol {
 
 /* Head2Head: links der gewählte Fahrer, rechts der Teamkollege */
 .head-to-head {
-  max-width: 40rem;
   margin-top: var(--space-xl);
 }
 
 .head-to-head__title {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 600;
 }
 
@@ -1173,6 +1187,13 @@ ol {
     color var(--transition);
 }
 
+/* Tippfläche von 44px, ohne den Kreis grösser zu zeichnen */
+.car-explorer__hotspot::before {
+  content: "";
+  position: absolute;
+  inset: -0.25rem;
+}
+
 .car-explorer__hotspot--telemetry {
   left: 11%;
 }
@@ -1215,6 +1236,7 @@ ol {
   display: flex;
   align-items: center;
   min-height: 19rem;
+  scroll-margin-block: calc(var(--header-height) + var(--space-md)) var(--space-md);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
@@ -1255,9 +1277,13 @@ ol {
     animation: car-explorer-pulse 2s ease-out infinite;
   }
 
-  .car-explorer--drawing .car-explorer__draw {
+  .car-explorer--armed .car-explorer__draw {
     stroke-dasharray: 1;
-    animation: car-explorer-draw 1600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    stroke-dashoffset: 1;
+  }
+
+  .car-explorer--drawing .car-explorer__draw {
+    animation: car-explorer-draw 1600ms cubic-bezier(0.65, 0, 0.35, 1) both;
   }
 
   .car-explorer__panel {
@@ -1389,8 +1415,6 @@ ol {
   .site-nav {
     position: static;
     padding: 0;
-    background: none;
-    border: none;
     visibility: visible;
     opacity: 1;
     transform: none;
@@ -1450,8 +1474,7 @@ ol {
   .head-to-head {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: var(--space-xl);
-    max-width: none;
+    column-gap: calc(2 * var(--space-xl));
   }
 
   .head-to-head__title,
@@ -1488,5 +1511,44 @@ ol {
     grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1.3fr);
     grid-template-areas: "list track details";
     align-items: start;
+  }
+}
+
+/* ==========================================================================
+   Handy im Querformat: Auto und Text nebeneinander, damit beide sichtbar bleiben
+   ========================================================================== */
+
+@media (min-width: 600px) and (max-height: 500px) {
+  .about {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    grid-template-areas:
+      "intro intro"
+      "stage panels";
+    align-items: center;
+  }
+
+  .about__intro {
+    grid-area: intro;
+  }
+
+  .car-explorer__stage {
+    grid-area: stage;
+  }
+
+  .car-explorer__panels {
+    grid-area: panels;
+    min-height: 0;
+  }
+
+  .car-explorer__panel {
+    padding: var(--space-sm);
+  }
+
+  .car-explorer__title {
+    font-size: var(--fs-base);
+  }
+
+  .car-explorer__text {
+    font-size: var(--fs-sm);
   }
 }
