@@ -128,9 +128,6 @@
               Spitzensport und Daten: In beiden Welten gewinnt, wer misst,
               versteht und sich verbessert, genau wie in der Formel 1.
             </p>
-            <p class="car-explorer__hint">
-              Klicke auf ein Bauteil des Autos, um mehr zu erfahren.
-            </p>
           </div>
 
           <div class="car-explorer__stage" data-car-stage>
@@ -299,7 +296,20 @@
           </div>
 
           <div class="car-explorer__panels" aria-live="polite">
-            <div class="car-explorer__panel" id="part-power" data-panel="power">
+            <div class="car-explorer__panel" data-panel="none">
+              <p class="car-explorer__label">
+                Bauteil wählen
+              </p>
+              <p class="car-explorer__text">
+                Klicke auf ein Bauteil des Autos, um mehr zu erfahren.
+              </p>
+            </div>
+            <div
+              class="car-explorer__panel"
+              id="part-power"
+              data-panel="power"
+              hidden
+            >
               <p class="car-explorer__label">
                 Antrieb
               </p>

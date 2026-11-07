@@ -1,4 +1,3 @@
-const INITIAL_PART = "power";
 const TOUCHED_CLASS = "car-explorer--touched";
 const ARMED_CLASS = "car-explorer--armed";
 const DRAWING_CLASS = "car-explorer--drawing";
@@ -33,8 +32,6 @@ export function initCarExplorer() {
     // Auf kleinen Bildschirmen läge der Text sonst unter dem sichtbaren Bereich
     root.querySelector(".car-explorer__panels").scrollIntoView({ block: "nearest" });
   });
-
-  show(INITIAL_PART);
 
   // Das Auto zeichnet sich erst auf, wenn es grösstenteils im Bild ist, sonst bliebe die Animation ungesehen.
   // Erst JS blendet die Linien aus: Ohne JS oder bei reduzierter Bewegung bleiben sie sichtbar.

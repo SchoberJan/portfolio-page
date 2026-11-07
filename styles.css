@@ -1207,13 +1207,6 @@ ol {
 
 /* Klickbares F1-Auto: Bauteil wählen, der Text folgt */
 
-.car-explorer__hint {
-  margin-top: var(--space-lg);
-  font-size: var(--fs-sm);
-  font-weight: 500;
-  color: var(--color-accent);
-}
-
 .car-explorer__stage {
   position: relative;
   aspect-ratio: 1000 / 400;
@@ -1621,7 +1614,7 @@ ol {
 
   .car-explorer__panels {
     grid-area: panels;
-    min-height: 0;
+    min-height: 14rem;
   }
 
   .car-explorer__panel {
