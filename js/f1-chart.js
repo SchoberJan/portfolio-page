@@ -17,6 +17,11 @@ const MIN_LABEL_STEP = 30;
 const SEGMENT_GAP = 2;
 // Maximum eines Wochenendes: Rennsieg (25) + Sprintsieg (8); seit 2025 kein Punkt mehr für die schnellste Runde
 const MAX_WEEKEND_POINTS = 33;
+// Unter dieser Ladezeit waren die Startlichter nie zu sehen, dann kein Halten
+const LIGHTS_VISIBLE_MS = 100;
+const LIGHTS_HOLD_MS = 400;
+// Nach einer Ablehnung der API steht die Anzeige rund 12 Sekunden still
+const SLOW_LOAD_MS = 5000;
 
 // Einheitliche Kürzel mit drei Buchstaben für die Achse, nach Strecke statt Land (Spanien und USA mehrfach)
 const RACE_CODES = {
@@ -298,6 +303,8 @@ export function initF1Chart() {
   const root = document.querySelector("[data-f1-chart]");
   if (!root) return;
 
+  const loader = root.querySelector("[data-loader]");
+  const lights = root.querySelector("[data-lights]");
   const status = root.querySelector("[data-status]");
   const title = root.querySelector("[data-title]");
   const select = root.querySelector("[data-driver-select]");
@@ -313,18 +320,36 @@ export function initF1Chart() {
   let rows = [];
   let chosenDriver;
   let loadId = 0;
+  let slowTimer;
 
   const showMessage = (message) => {
+    clearTimeout(slowTimer);
     rows = [];
     title.textContent = "Fahrerübersicht";
     summary.textContent = "";
     status.textContent = message;
-    status.hidden = false;
+    lights.hidden = true;
+    loader.hidden = false;
     canvas.hidden = true;
     tooltip.hidden = true;
     headToHead.hidden = true;
     select.replaceChildren();
     select.disabled = true;
+  };
+
+  const setLitLights = (count) => {
+    [...lights.children].forEach((light, index) => {
+      light.classList.toggle("loader__light--on", index < count);
+    });
+  };
+
+  const showLoading = () => {
+    showMessage("Fahrerdaten werden geladen …");
+    setLitLights(0);
+    lights.hidden = false;
+    slowTimer = setTimeout(() => {
+      status.textContent = "Die Daten brauchen gerade etwas länger …";
+    }, SLOW_LOAD_MS);
   };
 
   /** Teamvergleich: links der gewählte Fahrer, rechts das zweite Cockpit des Teams. */
@@ -370,7 +395,8 @@ export function initF1Chart() {
     const racePoints = d3.sum(rows, (row) => row.racePoints);
     const sprintPoints = d3.sum(rows, (row) => row.sprintPoints);
     summary.textContent = `${racePoints + sprintPoints} Punkte · ${racePoints} aus Rennen, ${sprintPoints} aus Sprints`;
-    status.hidden = true;
+    clearTimeout(slowTimer);
+    loader.hidden = true;
     canvas.hidden = false;
     render(d3, canvas, tooltip, rows, true);
   };
@@ -396,18 +422,31 @@ export function initF1Chart() {
 
   const load = async (requested) => {
     const id = ++loadId;
-    showMessage("Fahrerdaten werden geladen …");
+    const started = performance.now();
+    let arrived = 0;
+    // Jeder angekommene Datensatz schaltet ein Startlicht ein
+    const counted = async (dataset) => {
+      const data = await dataset;
+      if (id === loadId) setLitLights(++arrived);
+      return data;
+    };
+    showLoading();
 
     let loaded;
     try {
       loaded = await Promise.all([
-        import(D3_URL),
-        getDriverStandings(requested),
-        getSeasonRaces(requested),
-        getSeasonResults(requested),
-        getSeasonSprints(requested),
-        getSeasonQualifying(requested),
+        // Schon geladen: nicht erneut importieren, sonst blitzt die Anzeige bei Daten aus dem Cache auf
+        d3 ?? import(D3_URL),
+        counted(getDriverStandings(requested)),
+        counted(getSeasonRaces(requested)),
+        counted(getSeasonResults(requested)),
+        counted(getSeasonSprints(requested)),
+        counted(getSeasonQualifying(requested)),
       ]);
+      // Alle fünf Lichter kurz stehen lassen: Wenn sie ausgehen, geht es los
+      if (performance.now() - started > LIGHTS_VISIBLE_MS) {
+        await new Promise((resolve) => setTimeout(resolve, LIGHTS_HOLD_MS));
+      }
     } catch {
       if (id === loadId) showMessage("Das Diagramm konnte gerade nicht geladen werden.");
       return;

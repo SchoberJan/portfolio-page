@@ -574,13 +574,95 @@ ol {
   color: var(--color-accent);
 }
 
+/* Ladeanzeige: fünf Startlichter, das nächste pulsiert, solange die Daten unterwegs sind */
+.loader {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--space-sm);
+  text-align: center;
+}
+
+.loader__lights {
+  display: flex;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+}
+
+.loader__light {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--color-blueprint);
+  border-radius: 50%;
+}
+
+.loader__light--on {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent);
+}
+
+.loader__text {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loader__light:first-child:not(.loader__light--on),
+  .loader__light--on + .loader__light:not(.loader__light--on) {
+    animation: loader-next 700ms ease-in-out infinite alternate;
+  }
+
+  /* Verzögert: Kurze Ladezeiten sollen nicht aufflackern */
+  .countdown--reloading .countdown__loader {
+    animation: loader-appear 200ms ease-out 150ms backwards;
+  }
+
+  .countdown--reloading .countdown__body {
+    transition: opacity var(--transition) 150ms;
+  }
+}
+
+@keyframes loader-next {
+  to {
+    border-color: var(--color-accent);
+    background-color: rgb(39 244 210 / 0.5);
+  }
+}
+
+@keyframes loader-appear {
+  from {
+    opacity: 0;
+  }
+}
+
 /* F1-Countdown: Datum gross, darunter Countdown, rechts die Streckenform */
 .countdown {
+  position: relative;
   margin-top: var(--space-lg);
 }
 
-.countdown__status {
-  color: var(--color-text-muted);
+/* Saisonwechsel: Der bisherige Kalender bleibt abgedunkelt stehen, die Anzeige liegt darüber */
+.countdown--reloading .countdown__loader {
+  position: absolute;
+  z-index: 1;
+  top: var(--space-lg);
+  left: 50%;
+  width: max-content;
+  max-width: 100%;
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.5);
+  transform: translateX(-50%);
+}
+
+.countdown--reloading .countdown__body {
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 .countdown__body {
@@ -930,16 +1012,15 @@ ol {
   letter-spacing: -0.01em;
 }
 
-.driver-chart__summary,
-.driver-chart__status {
-  margin-top: 0.25rem;
-  font-size: var(--fs-sm);
-  color: var(--color-text-muted);
-}
-
 .driver-chart__summary {
+  margin-top: 0.25rem;
   font-size: var(--fs-base);
   color: var(--color-text);
+}
+
+/* Hält den Platz des Diagramms frei, damit die Seite beim Laden nicht springt */
+.driver-chart__loader {
+  min-height: 18rem;
 }
 
 .driver-chart__picker {

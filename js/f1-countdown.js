@@ -126,6 +126,8 @@ export function initF1Countdown() {
 
   const status = root.querySelector("[data-status]");
   const field = (name) => root.querySelector(`[data-${name}]`);
+  const loader = field("loader");
+  const lights = field("lights");
   const list = field("race-list");
   const toggle = field("race-toggle");
 
@@ -265,14 +267,20 @@ export function initF1Countdown() {
 
   const showMessage = (message) => {
     clearInterval(timer);
+    root.classList.remove("countdown--reloading");
     status.textContent = message;
-    status.hidden = false;
+    lights.hidden = true;
+    loader.hidden = false;
     field("body").hidden = true;
   };
 
-  /** Der bisherige Kalender bleibt stehen, bis die neue Saison da ist. */
+  /** Der bisherige Kalender bleibt abgedunkelt stehen, bis die neue Saison da ist. */
   const load = async (requested) => {
     const id = ++loadId;
+    root.classList.toggle("countdown--reloading", !field("body").hidden);
+    status.textContent = "Rennkalender wird geladen …";
+    lights.hidden = false;
+    loader.hidden = false;
     let loaded;
     try {
       loaded = await getSeasonRaces(requested);
@@ -295,7 +303,8 @@ export function initF1Countdown() {
     selected = nextIndex === -1 ? races.length - 1 : nextIndex;
     setExpanded(false);
     showRace();
-    status.hidden = true;
+    root.classList.remove("countdown--reloading");
+    loader.hidden = true;
     field("body").hidden = false;
   };
 

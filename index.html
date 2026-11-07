@@ -399,9 +399,18 @@
               </div>
             </div>
             <div class="countdown" data-f1-countdown>
-              <p class="countdown__status" data-status>
-                Rennkalender wird geladen …
-              </p>
+              <div class="loader countdown__loader" data-loader>
+                <div class="loader__lights" data-lights aria-hidden="true">
+                  <span class="loader__light"></span>
+                  <span class="loader__light"></span>
+                  <span class="loader__light"></span>
+                  <span class="loader__light"></span>
+                  <span class="loader__light"></span>
+                </div>
+                <p class="loader__text" data-status role="status">
+                  Rennkalender wird geladen …
+                </p>
+              </div>
               <div class="countdown__body" data-body hidden>
                 <div class="race-list">
                   <ol
@@ -507,9 +516,18 @@
                   </button>
                 </li>
               </ul>
-              <p class="driver-chart__status" data-status>
-                Fahrerdaten werden geladen …
-              </p>
+              <div class="loader driver-chart__loader" data-loader>
+                <div class="loader__lights" data-lights aria-hidden="true">
+                  <span class="loader__light"></span>
+                  <span class="loader__light"></span>
+                  <span class="loader__light"></span>
+                  <span class="loader__light"></span>
+                  <span class="loader__light"></span>
+                </div>
+                <p class="loader__text" data-status role="status">
+                  Fahrerdaten werden geladen …
+                </p>
+              </div>
               <div class="driver-chart__canvas" data-canvas hidden></div>
               <div
                 class="driver-chart__tooltip"
