@@ -2,6 +2,9 @@ const BASE_URL = "https://api.jolpi.ca/ergast/f1";
 const CACHE_PREFIX = "f1:";
 // Daten ändern sich nur an Rennwochenenden; schont das Limit der API (500 Anfragen/h)
 const CACHE_TTL_MS = 60 * 60 * 1000;
+// Eine abgeschlossene Saison ändert sich nicht mehr, nur „current“ muss frisch bleiben
+const ARCHIVE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const CURRENT_SEASON = "current";
 // Die API lehnt mehr als 4 Anfragen pro Sekunde ab (Status 429)
 const BURST_LIMIT = 4;
 const BURST_WINDOW_MS = 1000;
@@ -33,7 +36,8 @@ const pending = new Map();
  */
 function request(path) {
   const cached = readCache(CACHE_PREFIX + path);
-  if (cached && Date.now() - cached.time < CACHE_TTL_MS)
+  const ttl = path.startsWith(CURRENT_SEASON) ? CACHE_TTL_MS : ARCHIVE_TTL_MS;
+  if (cached && Date.now() - cached.time < ttl)
     return Promise.resolve(cached.data);
 
   if (!pending.has(path)) {
@@ -77,23 +81,29 @@ function writeCache(key, data) {
   }
 }
 
-/** Alle Rennen der laufenden Saison inkl. Sessions und Strecke. */
-export async function getSeasonRaces() {
-  const data = await request("current.json?limit=100");
+/** Das Jahr, das die API gerade als laufende Saison führt. */
+export async function getCurrentYear() {
+  const data = await request(`${CURRENT_SEASON}.json?limit=100`);
+  return Number(data.RaceTable.season);
+}
+
+/** Alle Rennen einer Saison („current“ oder Jahr) inkl. Sessions und Strecke. */
+export async function getSeasonRaces(season = CURRENT_SEASON) {
+  const data = await request(`${season}.json?limit=100`);
   return data.RaceTable.Races;
 }
 
-/** Die ersten drei eines Rennens der laufenden Saison – leer, solange kein Ergebnis vorliegt. */
-export async function getPodium(round) {
+/** Die ersten drei eines Rennens – leer, solange kein Ergebnis vorliegt. */
+export async function getPodium(round, season = CURRENT_SEASON) {
   const data = await request(
-    `current/${encodeURIComponent(round)}/results.json?limit=3`,
+    `${season}/${encodeURIComponent(round)}/results.json?limit=3`,
   );
   return data.RaceTable.Races[0]?.Results ?? [];
 }
 
-/** Aktueller WM-Stand aller Fahrer. */
-export async function getDriverStandings() {
-  const data = await request("current/driverStandings.json?limit=100");
+/** WM-Stand aller Fahrer einer Saison. */
+export async function getDriverStandings(season = CURRENT_SEASON) {
+  const data = await request(`${season}/driverStandings.json?limit=100`);
   return data.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
 }
 
@@ -127,14 +137,14 @@ async function requestAllRaces(endpoint, resultKey) {
   return [...races.values()];
 }
 
-/** Rennergebnisse aller Fahrer der laufenden Saison (Races[].Results). */
-export const getSeasonResults = () =>
-  requestAllRaces("current/results.json", "Results");
+/** Rennergebnisse aller Fahrer einer Saison (Races[].Results). */
+export const getSeasonResults = (season = CURRENT_SEASON) =>
+  requestAllRaces(`${season}/results.json`, "Results");
 
-/** Sprintergebnisse aller Fahrer der laufenden Saison (Races[].SprintResults). */
-export const getSeasonSprints = () =>
-  requestAllRaces("current/sprint.json", "SprintResults");
+/** Sprintergebnisse aller Fahrer einer Saison (Races[].SprintResults). */
+export const getSeasonSprints = (season = CURRENT_SEASON) =>
+  requestAllRaces(`${season}/sprint.json`, "SprintResults");
 
-/** Qualifying-Ergebnisse aller Fahrer der laufenden Saison (Races[].QualifyingResults). */
-export const getSeasonQualifying = () =>
-  requestAllRaces("current/qualifying.json", "QualifyingResults");
+/** Qualifying-Ergebnisse aller Fahrer einer Saison (Races[].QualifyingResults). */
+export const getSeasonQualifying = (season = CURRENT_SEASON) =>
+  requestAllRaces(`${season}/qualifying.json`, "QualifyingResults");
