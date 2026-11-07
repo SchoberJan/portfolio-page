@@ -5,15 +5,25 @@ const CACHE_TTL_MS = 60 * 60 * 1000;
 // Eine abgeschlossene Saison ändert sich nicht mehr, nur „current“ muss frisch bleiben
 const ARCHIVE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const CURRENT_SEASON = "current";
-// Die API lehnt mehr als 4 Anfragen pro Sekunde ab (Status 429)
+// Die API lehnt mehr als 4 Anfragen pro Sekunde ab (Status 429). Das Fenster ist länger als
+// eine Sekunde, weil Anfragen durch Netzschwankungen dichter beim Server ankommen können.
 const BURST_LIMIT = 4;
-const BURST_WINDOW_MS = 1000;
+const BURST_WINDOW_MS = 1200;
+// Nach einer Ablehnung sperrt die API rund 10 Sekunden (Retry-After). Der Browser kann den
+// Header nicht lesen, weil der 429-Antwort die CORS-Freigabe fehlt, darum ein fester Wert.
+const RETRY_PAUSE_MS = 12 * 1000;
+const RETRIES = 2;
 const recentStarts = [];
+let pausedUntil = 0;
 
-/** Wartet, bis im letzten Zeitfenster weniger als BURST_LIMIT Anfragen gestartet wurden. */
+/** Wartet eine laufende Sperre ab und bis im letzten Zeitfenster weniger als BURST_LIMIT Anfragen gestartet wurden. */
 async function waitForSlot() {
   for (;;) {
     const now = Date.now();
+    if (now < pausedUntil) {
+      await new Promise((resolve) => setTimeout(resolve, pausedUntil - now));
+      continue;
+    }
     while (recentStarts.length && now - recentStarts[0] >= BURST_WINDOW_MS)
       recentStarts.shift();
     if (recentStarts.length < BURST_LIMIT) {
@@ -49,16 +59,33 @@ function request(path) {
   return pending.get(path);
 }
 
+async function fetchOnce(path) {
+  await waitForSlot();
+  const response = await fetch(`${BASE_URL}/${path}`);
+  if (!response.ok)
+    throw new Error(`F1-API antwortet mit Status ${response.status}`);
+  const { MRData } = await response.json();
+  return MRData;
+}
+
+/** Eine abgelehnte Seite soll nicht das ganze Diagramm kippen: alle Anfragen pausieren, dann erneut versuchen. */
+async function fetchWithRetry(path) {
+  for (let attempt = 0; attempt < RETRIES; attempt++) {
+    try {
+      return await fetchOnce(path);
+    } catch {
+      pausedUntil = Date.now() + RETRY_PAUSE_MS;
+    }
+  }
+  return fetchOnce(path);
+}
+
 async function fetchAndCache(path, cached) {
   const key = CACHE_PREFIX + path;
   try {
-    await waitForSlot();
-    const response = await fetch(`${BASE_URL}/${path}`);
-    if (!response.ok)
-      throw new Error(`F1-API antwortet mit Status ${response.status}`);
-    const { MRData } = await response.json();
-    writeCache(key, MRData);
-    return MRData;
+    const data = await fetchWithRetry(path);
+    writeCache(key, data);
+    return data;
   } catch (error) {
     if (cached) return cached.data;
     throw error;
