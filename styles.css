@@ -736,8 +736,9 @@ ol {
 }
 
 .countdown__track svg {
+  display: block;
   width: 100%;
-  max-height: 16rem;
+  max-height: 18rem;
   overflow: visible;
 }
 
@@ -746,6 +747,40 @@ ol {
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
+}
+
+/* Dunkler Rand: Die Strecke hebt sich so vom Bauplan dahinter ab */
+.countdown__track .countdown__track-casing {
+  stroke: var(--color-bg);
+  stroke-width: 10;
+}
+
+.countdown__track .countdown__track-line {
+  stroke: var(--color-text);
+  stroke-width: 5;
+}
+
+.countdown__track .countdown__track-start {
+  stroke: var(--color-accent);
+  stroke-width: 5;
+  stroke-linecap: butt;
+}
+
+.countdown__track-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-md);
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+}
+
+.countdown__track-legend::before {
+  content: "";
+  width: 1rem;
+  height: 0.25rem;
+  background-color: var(--color-accent);
 }
 
 /* Top 3 eines gefahrenen Rennens */

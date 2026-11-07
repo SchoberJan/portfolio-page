@@ -3,6 +3,8 @@ const CIRCUITS_URL =
   "https://cdn.jsdelivr.net/gh/bacinger/f1-circuits@8094e957b8d6aa8b9f4510c93968556cccd30e02/f1-circuits.geojson";
 // Rund 10 km: weiter weg liegt keine Strecke zu den Koordinaten aus der F1-API
 const MAX_DISTANCE_DEG = 0.1;
+// Halbe Länge der Start-Ziel-Linie, gemessen an der längsten Seite der Strecke (= 100)
+const START_LINE_HALF = 6;
 
 // Die Datei wird nur einmal geladen und für jede weitere Strecke wiederverwendet
 let featuresPromise;
@@ -36,23 +38,57 @@ export async function getCircuitOutline(lat, lng) {
   return distance(nearest) <= MAX_DISTANCE_DEG ? toSvgPath(nearest.geometry.coordinates) : null;
 }
 
+const round = (value) => value.toFixed(1);
+const point = ([x, y]) => `${round(x)} ${round(y)}`;
+
+/** Richtung von a nach b als Vektor der Länge 1. */
+function direction(a, b) {
+  const length = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+  return [(b[0] - a[0]) / length, (b[1] - a[1]) / length];
+}
+
+/**
+ * Glättet den geschlossenen Streckenzug zu Bézierkurven. Die Griffe richten sich nach
+ * dem eigenen Teilstück: lange Geraden neben kurzen Kurven schiessen so nicht über.
+ */
+function smoothPath(points) {
+  const at = (index) => points[(index + points.length) % points.length];
+  const curves = points.map((current, index) => {
+    const next = at(index + 1);
+    const handle = Math.hypot(next[0] - current[0], next[1] - current[1]) / 3;
+    const out = direction(at(index - 1), next);
+    const into = direction(current, at(index + 2));
+    const first = [current[0] + out[0] * handle, current[1] + out[1] * handle];
+    const second = [next[0] - into[0] * handle, next[1] - into[1] * handle];
+    return `C${point(first)} ${point(second)} ${point(next)}`;
+  });
+  return `M${point(points[0])}${curves.join("")}Z`;
+}
+
 /** Rechnet Längen-/Breitengrade in einen SVG-Pfad um (längste Seite = 100). */
-function toSvgPath(coordinates) {
+export function toSvgPath(coordinates) {
   // Längengrade werden zum Pol hin schmaler; ohne Korrektur wäre die Strecke verzerrt
   const shrink = Math.cos((coordinates[0][1] * Math.PI) / 180);
-  const points = coordinates.map(([lng, lat]) => [lng * shrink, -lat]);
+  const projected = coordinates.map(([lng, lat]) => [lng * shrink, -lat]);
 
-  const xs = points.map(([x]) => x);
-  const ys = points.map(([, y]) => y);
+  const xs = projected.map(([x]) => x);
+  const ys = projected.map(([, y]) => y);
   const minX = Math.min(...xs);
   const minY = Math.min(...ys);
   const scale = 100 / Math.max(Math.max(...xs) - minX, Math.max(...ys) - minY);
-
-  const d = points
-    .map(([x, y], i) => `${i ? "L" : "M"}${((x - minX) * scale).toFixed(1)} ${((y - minY) * scale).toFixed(1)}`)
-    .join("");
   const width = (Math.max(...xs) - minX) * scale;
   const height = (Math.max(...ys) - minY) * scale;
 
-  return { d: `${d}Z`, viewBox: `0 0 ${width.toFixed(1)} ${height.toFixed(1)}` };
+  // Alle Verläufe im Datensatz sind geschlossen: Der letzte Punkt wiederholt den ersten
+  const points = projected.slice(0, -1).map(([x, y]) => [(x - minX) * scale, (y - minY) * scale]);
+
+  // Der Datensatz beginnt auf der Start-Ziel-Geraden; die Linie steht quer zur Fahrtrichtung
+  const [start] = points;
+  const [dx, dy] = direction(start, points[1]);
+  const startLine = `M${point([start[0] - dy * START_LINE_HALF, start[1] + dx * START_LINE_HALF])}L${point([
+    start[0] + dy * START_LINE_HALF,
+    start[1] - dx * START_LINE_HALF,
+  ])}`;
+
+  return { d: smoothPath(points), startLine, viewBox: `0 0 ${round(width)} ${round(height)}` };
 }

@@ -218,7 +218,13 @@ export async function initF1Countdown() {
     if (id !== showId) return;
     track.hidden = !outline;
     if (outline) {
-      track.innerHTML = `<svg viewBox="${outline.viewBox}" aria-hidden="true" focusable="false"><path d="${outline.d}" /></svg>`;
+      track.innerHTML = `
+        <svg viewBox="${outline.viewBox}" aria-hidden="true" focusable="false">
+          <path class="countdown__track-casing" d="${outline.d}" />
+          <path class="countdown__track-line" d="${outline.d}" />
+          <path class="countdown__track-start" d="${outline.startLine}" />
+        </svg>
+        <p class="countdown__track-legend">Start und Ziel</p>`;
     }
   };
 
