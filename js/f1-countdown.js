@@ -17,6 +17,11 @@ export const toDate = ({ date, time = "00:00:00Z" }) => new Date(`${date}T${time
 const format = (date, options) =>
   new Intl.DateTimeFormat("de-DE", { timeZone: TIME_ZONE, ...options }).format(date);
 const formatMonth = (date) => format(date, { month: "short" }).replace(".", "").toUpperCase();
+const formatWeekday = (date) => format(date, { weekday: "short" }).replace(".", "").toUpperCase();
+const formatShortDate = (date) => `${format(date, { day: "2-digit" })} ${formatMonth(date)}`;
+const formatTime = (date) => format(date, { hour: "2-digit", minute: "2-digit" });
+const formatLongDate = (date, options = {}) =>
+  format(date, { weekday: "long", day: "numeric", month: "long", ...options });
 const pad = (value) => String(value).padStart(2, "0");
 export const isFinished = (race) => toDate(race).getTime() + RACE_DURATION_MS < Date.now();
 
@@ -37,6 +42,40 @@ function getSessions(race) {
   return sessions.sort((a, b) => a.start - b.start);
 }
 
+/** Sessions je Kalendertag in Schweizer Zeit; die Reihenfolge bleibt erhalten. */
+export function groupByDay(sessions) {
+  const days = new Map();
+  for (const session of sessions) {
+    const day = format(session.start, { dateStyle: "short" });
+    days.set(day, [...(days.get(day) ?? []), session]);
+  }
+  return [...days.values()];
+}
+
+function createSessionItem(session) {
+  const item = createElement("li", "sessions__item");
+  item.append(
+    createElement("span", "sessions__name", session.name),
+    createElement("span", "sessions__time", formatTime(session.start)),
+  );
+  return item;
+}
+
+/** Eine Spalte im Zeitplan: Wochentag und Datum, darunter die Sessions dieses Tages. */
+function createSessionDay(sessions, items) {
+  const { start } = sessions[0];
+  const label = createElement("p", "sessions__day-label");
+  label.append(
+    createElement("span", "sessions__weekday", formatWeekday(start)),
+    createElement("span", "sessions__date", formatShortDate(start)),
+  );
+  const list = createElement("ol", "sessions__list");
+  list.append(...sessions.map((session) => items.get(session)));
+  const day = createElement("li", "sessions__day");
+  day.append(label, list);
+  return day;
+}
+
 /** Tage und Monat(e) des Wochenendes in Schweizer Zeit, z. B. „30–1“ und „OKT–NOV“. */
 function formatWeekend(first, last) {
   const days = `${format(first, { day: "numeric" })}–${format(last, { day: "numeric" })}`;
@@ -53,7 +92,7 @@ function createRaceButton(race, index) {
   button.append(
     createElement("span", "race-list__round", `R${race.round}`),
     createElement("span", "race-list__name", race.raceName),
-    createElement("span", "race-list__date", format(toDate(race), { day: "2-digit", month: "2-digit" })),
+    createElement("span", "race-list__date", formatShortDate(toDate(race))),
   );
   const item = document.createElement("li");
   item.append(button);
@@ -132,27 +171,16 @@ export async function initF1Countdown() {
   };
 
   const startCountdown = (sessions) => {
-    const scheduleItems = sessions.map((session) => {
-      const item = createElement("li", "sessions__item");
-      item.append(
-        createElement("span", "sessions__name", session.name),
-        createElement(
-          "span",
-          "sessions__time",
-          format(session.start, { weekday: "short", hour: "2-digit", minute: "2-digit" }),
-        ),
-      );
-      return item;
-    });
-    field("sessions").replaceChildren(...scheduleItems);
+    const items = new Map(sessions.map((session) => [session, createSessionItem(session)]));
+    field("sessions").replaceChildren(...groupByDay(sessions).map((day) => createSessionDay(day, items)));
 
     const tick = () => {
       const now = Date.now();
       const next = sessions.find((session) => session.start > now);
-      sessions.forEach((session, index) => {
-        scheduleItems[index].classList.toggle("sessions__item--done", session.start <= now);
-        scheduleItems[index].classList.toggle("sessions__item--next", session === next);
-      });
+      for (const [session, item] of items) {
+        item.classList.toggle("sessions__item--done", session.start <= now);
+        item.classList.toggle("sessions__item--next", session === next);
+      }
       if (!next) {
         field("label").textContent = "Das Rennen läuft";
         field("start").textContent = "";
@@ -165,13 +193,7 @@ export async function initF1Countdown() {
       field("unit-hours").textContent = pad(Math.floor(minutes / 60) % 24);
       field("unit-minutes").textContent = pad(minutes % 60);
       field("label").textContent = `${next.name} startet in`;
-      field("start").textContent = `${format(next.start, {
-        weekday: "short",
-        day: "2-digit",
-        month: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      })} Uhr (Schweizer Zeit)`;
+      field("start").textContent = `${formatLongDate(next.start)}, ${formatTime(next.start)} Uhr`;
     };
     timer = setInterval(tick, 1000);
     tick();
@@ -180,12 +202,7 @@ export async function initF1Countdown() {
   const showPodium = async (race, id) => {
     const resultStatus = field("result-status");
     const podium = field("podium");
-    field("label").textContent = `Gefahren am ${format(toDate(race), {
-      weekday: "short",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    })}`;
+    field("label").textContent = `Gefahren am ${formatLongDate(toDate(race), { year: "numeric" })}`;
     resultStatus.textContent = "Ergebnis wird geladen …";
     resultStatus.hidden = false;
     podium.replaceChildren();

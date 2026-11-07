@@ -505,6 +505,7 @@ ol {
 .race-list__round,
 .race-list__date,
 .sessions__time,
+.sessions__date,
 .countdown__value,
 .countdown__unit,
 .podium__gap,
@@ -662,25 +663,44 @@ ol {
   font-weight: 500;
 }
 
-/* Countdown und Zeitplan nebeneinander, bei wenig Platz untereinander */
-.countdown__upcoming {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--space-md) var(--space-lg);
-}
-
-/* Schmal startend, damit der Zeitplan daneben passt; die Startzeile bricht dann um */
-.countdown__clock {
-  flex: 1 1 10rem;
-}
-
+/* Zeitplan: eine Spalte pro Tag, die Zahl der Tage ergibt sich aus den Daten */
 .sessions {
   display: grid;
-  grid-template-columns: auto auto;
-  gap: 0.25rem var(--space-md);
-  margin-top: var(--space-xs);
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.sessions__day {
+  padding-top: var(--space-xs);
+  border-top: 2px solid var(--color-border);
+}
+
+/* Tag der nächsten Session */
+.sessions__day:has(.sessions__item--next) {
+  border-top-color: var(--color-accent);
+}
+
+.sessions__day-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-xs);
   font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+.sessions__weekday {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.sessions__list {
+  display: grid;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
 }
 
 .sessions__item {
@@ -700,7 +720,26 @@ ol {
 }
 
 .sessions__time {
+  font-size: var(--fs-base);
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.sessions__item--done .sessions__time {
+  font-weight: 400;
+  color: inherit;
+}
+
+.sessions__item--next .sessions__time {
+  font-weight: 700;
+  color: inherit;
+}
+
+.sessions__note {
+  margin-top: var(--space-md);
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
 }
 
 .countdown__timer {
