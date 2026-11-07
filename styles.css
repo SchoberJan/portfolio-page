@@ -1173,13 +1173,11 @@ ol {
 .car-explorer__hotspot {
   position: absolute;
   top: 5%;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 1.75rem;
+  height: 1.75rem;
   border: 1px solid var(--color-accent);
   border-radius: 50%;
   background-color: var(--color-bg);
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
   color: var(--color-accent);
   transform: translate(-50%, -50%);
   transition:
@@ -1191,7 +1189,19 @@ ol {
 .car-explorer__hotspot::before {
   content: "";
   position: absolute;
-  inset: -0.25rem;
+  inset: -0.5rem;
+}
+
+/* Punkt in der Mitte: zeigt ohne Beschriftung, dass die Stelle klickbar ist */
+.car-explorer__hotspot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin: auto;
+  border-radius: 50%;
+  background-color: currentColor;
 }
 
 .car-explorer__hotspot--telemetry {
@@ -1216,21 +1226,6 @@ ol {
   color: var(--color-on-accent);
 }
 
-/* Dieselbe Nummer wie am Auto: verbindet Bauteil und Text */
-.car-explorer__number {
-  display: inline-grid;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--color-accent);
-  border-radius: 50%;
-  background-color: var(--color-accent);
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-  font-weight: 500;
-  color: var(--color-on-accent);
-}
-
 /* Feste Mindesthöhe, damit die Seite beim Wechsel nicht springt */
 .car-explorer__panels {
   display: flex;
@@ -1247,16 +1242,11 @@ ol {
 }
 
 .car-explorer__label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--space-xs);
   font-weight: 600;
   font-stretch: 112%;
   color: var(--color-accent);
 }
-
-
 
 .car-explorer__title {
   font-size: var(--fs-h3);

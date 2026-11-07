@@ -4,7 +4,7 @@ const ARMED_CLASS = "car-explorer--armed";
 const DRAWING_CLASS = "car-explorer--drawing";
 
 /**
- * Macht das F1-Auto bei „Über mich“ klickbar: Bauteil oder Nummer
+ * Macht das F1-Auto bei „Über mich“ klickbar: Bauteil oder Markierung
  * wählen ein Bauteil, sein Text erscheint daneben.
  */
 export function initCarExplorer() {
