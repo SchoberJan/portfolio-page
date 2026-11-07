@@ -989,7 +989,7 @@ ol {
   color: var(--color-text);
 }
 
-/* Head2Head: links der gewählte Fahrer, rechts der Teamkollege */
+/* Teamduell: links der gewählte Fahrer, rechts der Teamkollege */
 .head-to-head {
   margin-top: var(--space-xl);
 }

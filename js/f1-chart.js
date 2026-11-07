@@ -274,7 +274,7 @@ function render(d3, canvas, tooltip, rows, animate) {
 }
 
 /**
- * Driver Overview: Punkte des gewählten Fahrers pro Rennen (Rennen und Sprint),
+ * Fahrerübersicht: Punkte des gewählten Fahrers pro Rennen (Rennen und Sprint),
  * darunter der Vergleich mit dem Teamkollegen in Qualifying und Rennen.
  */
 export async function initF1Chart() {
