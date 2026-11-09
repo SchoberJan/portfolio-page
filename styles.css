@@ -17,7 +17,6 @@
   --color-blueprint: #66727a;
   --blueprint: url("./images/blueprint.svg") 72% center / cover no-repeat;
   --blueprint-opacity: 0.11;
-  --blueprint-tint: linear-gradient(100deg, var(--color-accent-soft), transparent 55%);
   /* Diagrammfarben: Helligkeit trennt die Reihen auch bei Farbenblindheit, Kontrast mindestens 3:1 */
   --color-chart-race: var(--color-accent);
   --color-chart-sprint: #707c85;
@@ -100,7 +99,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: var(--blueprint), var(--blueprint-tint);
+  background: var(--blueprint);
   opacity: var(--blueprint-opacity);
 }
 
@@ -239,7 +238,6 @@ ol {
   background:
     linear-gradient(rgb(7 9 10 / calc(1 - var(--blueprint-opacity))) 0 0),
     var(--blueprint),
-    var(--blueprint-tint),
     var(--color-bg);
   clip-path: inset(0 0 calc(100% - var(--header-height)) 0);
 }
@@ -476,6 +474,12 @@ ol {
   scroll-margin-top: var(--header-height);
 }
 
+/* Daten brauchen ruhigen Grund: Unter Kalender und Diagramm tritt der Bauplan auf die Hälfte zurück */
+.section--data {
+  --veil: color-mix(in srgb, var(--color-bg) 55%, transparent);
+  background: linear-gradient(transparent, var(--veil) 16rem, var(--veil) calc(100% - 8rem), transparent);
+}
+
 .section__title {
   font-size: var(--fs-h2);
   font-weight: 700;
@@ -536,7 +540,7 @@ ol {
 }
 
 .interest__title {
-  font-size: 1.5rem;
+  font-size: var(--fs-h3);
   font-weight: 600;
   letter-spacing: -0.015em;
 }
@@ -818,7 +822,7 @@ ol {
 
 .sessions__weekday {
   font-size: var(--fs-base);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text);
 }
 
@@ -857,7 +861,7 @@ ol {
 }
 
 .sessions__item--next .sessions__time {
-  font-weight: 700;
+  font-weight: 600;
   color: inherit;
 }
 
@@ -879,7 +883,7 @@ ol {
 }
 
 .countdown__value {
-  font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem);
+  font-size: var(--fs-h2);
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -963,7 +967,7 @@ ol {
 
 .podium__position {
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1113,7 +1117,7 @@ ol {
 }
 
 .driver-chart__grid .driver-chart__tick--max text {
-  font-weight: 700;
+  font-weight: 600;
   fill: var(--color-text);
 }
 
@@ -1210,7 +1214,13 @@ ol {
   font-weight: 600;
 }
 
-.head-to-head__names,
+/* Team und Anzahl gemeinsamer Rennen unter dem Titel, wie die Punkte unter der Fahrerübersicht */
+.head-to-head__meta {
+  margin-top: 0.25rem;
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
 .duel__averages {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
@@ -1219,6 +1229,9 @@ ol {
 }
 
 .head-to-head__names {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
   margin-top: var(--space-lg);
   padding-bottom: var(--space-sm);
   border-bottom: 1px solid var(--color-border);
@@ -1250,16 +1263,6 @@ ol {
   background-color: var(--color-chart-teammate);
 }
 
-/* Anzahl gemeinsamer Rennen, rechtsbündig unter dem Teamkollegen */
-.head-to-head__note {
-  grid-column: 1 / -1;
-  margin-top: -0.25rem;
-  font-size: var(--fs-sm);
-  color: var(--color-text-muted);
-  text-align: right;
-}
-
-.head-to-head__team,
 .duel__label {
   font-size: var(--fs-sm);
   color: var(--color-text-muted);
@@ -1272,7 +1275,7 @@ ol {
 
 .duel__average {
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1688,6 +1691,7 @@ ol {
   }
 
   .head-to-head__title,
+  .head-to-head__meta,
   .head-to-head__names {
     grid-column: 1 / -1;
   }

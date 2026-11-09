@@ -161,20 +161,8 @@
                   <path
                     d="M44 72C60 110 60 150 52 200M58 72C76 110 78 150 68 200"
                   />
-                  <rect
-                    x="148"
-                    y="45"
-                    width="118"
-                    height="52"
-                    rx="8"
-                  />
-                  <rect
-                    x="706"
-                    y="45"
-                    width="118"
-                    height="62"
-                    rx="8"
-                  />
+                  <rect x="148" y="45" width="118" height="52" rx="8" />
+                  <rect x="706" y="45" width="118" height="62" rx="8" />
                   <path
                     d="M186 97L292 168M240 97L300 166M720 107L760 128M800 107L790 146"
                   />
@@ -279,9 +267,7 @@
 
           <div class="car-explorer__panels" aria-live="polite">
             <div class="car-explorer__panel" data-panel="none">
-              <p class="car-explorer__label">
-                Bauteil wählen
-              </p>
+              <p class="car-explorer__label">Bauteil wählen</p>
               <p class="car-explorer__text">
                 Klicke auf ein Bauteil des Autos, um mehr zu erfahren.
               </p>
@@ -292,9 +278,7 @@
               data-panel="power"
               hidden
             >
-              <p class="car-explorer__label">
-                Antrieb
-              </p>
+              <p class="car-explorer__label">Antrieb</p>
               <h3 class="car-explorer__title">
                 Rollhockey in der Schweizer Nationalmannschaft
               </h3>
@@ -310,16 +294,14 @@
               data-panel="telemetry"
               hidden
             >
-              <p class="car-explorer__label">
-                Telemetrie
-              </p>
+              <p class="car-explorer__label">Telemetrie</p>
               <h3 class="car-explorer__title">
                 Junior Finance &amp; Power BI Specialist
               </h3>
               <p class="car-explorer__text">
                 Die Telemetrie verrät dem Team, was im Auto wirklich geschieht.
-                Genau das leiste ich mit Daten: Ich bereite komplexe Sachverhalte
-                verständlich auf und mache aus Zahlen fundierte
+                Genau das leiste ich mit Daten: Ich bereite komplexe
+                Sachverhalte verständlich auf und mache aus Zahlen fundierte
                 Entscheidungsgrundlagen.
               </p>
             </div>
@@ -329,9 +311,7 @@
               data-panel="chassis"
               hidden
             >
-              <p class="car-explorer__label">
-                Chassis
-              </p>
+              <p class="car-explorer__label">Chassis</p>
               <h3 class="car-explorer__title">
                 Bankausbildung und Beratungserfahrung
               </h3>
@@ -348,9 +328,7 @@
               data-panel="cockpit"
               hidden
             >
-              <p class="car-explorer__label">
-                Cockpit
-              </p>
+              <p class="car-explorer__label">Cockpit</p>
               <h3 class="car-explorer__title">
                 Student BSc Wirtschaftsinformatik
               </h3>
@@ -364,7 +342,11 @@
         </div>
       </section>
 
-      <section class="section" id="interests" aria-labelledby="interests-title">
+      <section
+        class="section section--data"
+        id="interests"
+        aria-labelledby="interests-title"
+      >
         <div class="container">
           <h2 class="section__title" id="interests-title">
             Was mich begeistert
@@ -479,7 +461,9 @@
             <div class="driver-chart" data-f1-chart>
               <div class="driver-chart__header">
                 <div>
-                  <h4 class="driver-chart__title" data-title>Fahrerübersicht</h4>
+                  <h4 class="driver-chart__title" data-title>
+                    Fahrerübersicht
+                  </h4>
                   <p class="driver-chart__summary" data-summary></p>
                 </div>
                 <label class="driver-chart__picker">
@@ -538,19 +522,18 @@
 
               <div class="head-to-head" data-head-to-head hidden>
                 <h5 class="head-to-head__title">Teamduell</h5>
+                <p class="head-to-head__meta">
+                  <span data-h2h="team"></span> ·
+                  <span data-h2h="teammate-note"></span>
+                </p>
                 <div class="head-to-head__names">
                   <span
                     class="head-to-head__name head-to-head__name--driver"
                     data-h2h="driver"
                   ></span>
-                  <span class="head-to-head__team" data-h2h="team"></span>
                   <span
                     class="head-to-head__name head-to-head__name--teammate"
                     data-h2h="teammate"
-                  ></span>
-                  <span
-                    class="head-to-head__note"
-                    data-h2h="teammate-note"
                   ></span>
                 </div>
                 <div class="duel" data-duel="qualifying">
