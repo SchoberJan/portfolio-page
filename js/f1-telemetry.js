@@ -6,11 +6,11 @@ const NO_DATA = "Gerade keine Daten";
 
 const pad = (value) => String(value).padStart(2, "0");
 
-/** Restzeit in Tagen, Stunden und Minuten, z. B. „3 T 04 Std 12 Min“. */
+/** Restzeit in Tagen, Stunden und Minuten wie im Rennkalender, z. B. „03 Tage 04 Std 12 Min“. */
 export function formatRemaining(milliseconds) {
   const minutes = Math.floor(Math.max(0, milliseconds) / 60000);
   const days = Math.floor(minutes / 1440);
-  return `${days} T ${pad(Math.floor(minutes / 60) % 24)} Std ${pad(minutes % 60)} Min`;
+  return `${pad(days)} Tage ${pad(Math.floor(minutes / 60) % 24)} Std ${pad(minutes % 60)} Min`;
 }
 
 async function showNextRace(raceField, countdownField) {
