@@ -1436,6 +1436,16 @@ ol {
   color: var(--color-accent);
 }
 
+/* Nahaufnahme: Details eines Bauteils, die erst in seiner Einzelheit erscheinen */
+.car-explorer__close-up {
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.car-explorer__part[data-active] .car-explorer__close-up {
+  opacity: 1;
+}
+
 /* Jede Markierung sitzt am oberen Ende ihrer Hinweislinie (--ax | --ay in Einheiten der Zeichnung)
    und folgt der Kamera; in der Einzelheit rutscht sie höchstens bis --car-edge an den Rand. */
 .car-explorer__hotspot {
@@ -1607,6 +1617,12 @@ ol {
       opacity var(--transition),
       background-color var(--transition),
       color var(--transition);
+  }
+
+  /* Die Details zeichnen sich auf, kurz bevor die Kamera ankommt */
+  .car-explorer__part[data-active] .car-explorer__close-up > * {
+    stroke-dasharray: 1;
+    animation: car-explorer-draw 900ms var(--ease-out) calc(var(--flight, 700ms) - 400ms) both;
   }
 
   /* Der Text folgt, wenn die Kamera fast angekommen ist; --flight ist die Dauer der Fahrt (JS) */
