@@ -11,6 +11,13 @@ const DRAWING_WIDTH = 1000;
 const EDGE_PX = 28;
 const HINT_OPEN = "Wähle einen Punkt am Auto, um mehr über mich zu erfahren.";
 const HINT_CLOSE = "Ein erneuter Klick auf den Punkt zeigt wieder das ganze Auto.";
+// Gleiche Kurve wie --ease-out im CSS
+const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
+const ENTER_MS = 700;
+const LEAVE_MS = 450;
+const WHOLE_CAR = { "--car-x": 0, "--car-y": 0, "--car-zoom": 1 };
+
+const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /**
  * Kamera für die Einzelheit: setzt den Ausschnitt eines Bauteils (in Einheiten der Zeichnung)
@@ -49,31 +56,38 @@ export function initCarExplorer() {
   const hotspots = [...stage.querySelectorAll("button[data-part]")];
   const panels = [...root.querySelectorAll("[data-panel]")];
   let current = null;
+  let flight;
 
-  /** Fährt die Kamera auf das gewählte Bauteil; die Markierungen bleiben auf ihren Hinweislinien. */
-  const layout = () => {
-    const hotspot = hotspots.find((button) => button.dataset.part === current);
+  /** Kamera, die einen Ausschnitt der Zeichnung in die Einzelheit setzt, in Einheiten der Zeichnung. */
+  const frame = (rect) => {
     const unit = stage.clientWidth / DRAWING_WIDTH;
-    const camera = hotspot
-      ? fitDetail(hotspot.dataset.focus.split(" ").map(Number), unit, detail.clientWidth, stage.clientHeight)
-      : { zoom: 1, x: 0, y: 0 };
-    // Die Kamera sitzt im SVG und rechnet darum in Einheiten der Zeichnung statt in px
-    stage.style.setProperty("--car-x", `${camera.x / unit}px`);
-    stage.style.setProperty("--car-y", `${camera.y / unit}px`);
-    stage.style.setProperty("--car-zoom", camera.zoom);
+    const camera = fitDetail(rect, unit, detail.clientWidth, stage.clientHeight);
+    return { "--car-x": camera.x / unit, "--car-y": camera.y / unit, "--car-zoom": camera.zoom };
+  };
 
+  /** Stellt die Kamera auf das gewählte Bauteil, mit Fahrt vom aktuellen Stand aus oder direkt. */
+  const layout = (animate = false) => {
+    const hotspot = hotspots.find((button) => button.dataset.part === current);
+    const target = hotspot ? frame(hotspot.dataset.focus.split(" ").map(Number)) : WHOLE_CAR;
+    // Mitten in einer Fahrt beginnt die nächste dort, wo die Kamera gerade steht
+    const style = getComputedStyle(stage);
+    const from = Object.fromEntries(Object.keys(target).map((key) => [key, Number(style.getPropertyValue(key))]));
+    flight?.cancel();
+    for (const [key, value] of Object.entries(target)) stage.style.setProperty(key, value);
+    if (animate && !prefersReducedMotion()) {
+      flight = stage.animate([from, target], { duration: hotspot ? ENTER_MS : LEAVE_MS, easing: EASE_OUT });
+    }
+
+    const unit = stage.clientWidth / DRAWING_WIDTH;
     for (const button of hotspots) {
-      // offsetLeft/-Top ist die Lage ohne Kamera, die Verschiebung kommt über „translate“ dazu
-      const x = camera.x + button.offsetLeft * camera.zoom;
-      const y = Math.max(EDGE_PX, camera.y + button.offsetTop * camera.zoom);
-      button.style.setProperty("--dx", `${x - button.offsetLeft}px`);
-      button.style.setProperty("--dy", `${y - button.offsetTop}px`);
+      const anchor = Number(getComputedStyle(button).getPropertyValue("--ax"));
+      const x = (target["--car-x"] + anchor * target["--car-zoom"]) * unit;
       // Ausserhalb der Einzelheit abgeschnitten: dann auch nicht per Tastatur erreichbar
       button.inert = Boolean(hotspot) && (x < EDGE_PX || x > detail.clientWidth - EDGE_PX);
     }
     if (hotspot) {
       const name = panels.find((panel) => panel.dataset.panel === current).querySelector(".car-explorer__label");
-      scale.textContent = `Einzelheit ${name.textContent.trim()} · ${formatScale(camera.zoom)}`;
+      scale.textContent = `Einzelheit ${name.textContent.trim()} · ${formatScale(target["--car-zoom"])}`;
     }
   };
 
@@ -89,7 +103,7 @@ export function initCarExplorer() {
     }
     for (const panel of panels) panel.hidden = panel.dataset.panel !== part;
     hint.textContent = part ? HINT_CLOSE : HINT_OPEN;
-    layout();
+    layout(true);
   };
 
   root.addEventListener("click", (event) => {
@@ -110,7 +124,7 @@ export function initCarExplorer() {
   });
 
   // Breite ändert sich (Drehen, Fenstergrösse): Kamera und Markierungen neu ausrichten
-  new ResizeObserver(layout).observe(stage);
+  new ResizeObserver(() => layout()).observe(stage);
 
   // Die Regeln der Animation erreichen den Inhalt von <use> nicht, darum wird die Spiegelhälfte zu echten Elementen.
   for (const mirror of stage.querySelectorAll("use")) {

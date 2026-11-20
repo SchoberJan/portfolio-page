@@ -1337,16 +1337,29 @@ ol {
 .car-explorer {
   --detail-width: 100%;
   --car-stroke: 2.5;
+  /* Obere Grenze für die Markierungen: ohne Auswahl keine, in der Einzelheit 28px für die volle Tippfläche */
+  --car-edge: -3rem;
 }
 
-/* Registriert, damit die Kamera selbst animiert: Linien und Strichstärke folgen ihr in jedem Bild */
+.car-explorer--detail {
+  --car-edge: 28px;
+}
+
+/* Registriert, damit die Kamera selbst animiert: Linien, Strichstärke und Markierungen folgen ihr in
+   jedem Bild. Ort und Zoom stehen in Einheiten der Zeichnung (viewBox 1000 × 400). */
 @property --car-x {
-  syntax: "<length>";
+  syntax: "<number>";
   inherits: true;
-  initial-value: 0px;
+  initial-value: 0;
 }
 
 @property --car-y {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --car-edge {
   syntax: "<length>";
   inherits: true;
   initial-value: 0px;
@@ -1366,6 +1379,8 @@ ol {
 /* Die Einzelheit schneidet das vergrösserte Auto ab; ohne Auswahl bleibt Platz für den Puls der Markierungen */
 .car-explorer__stage {
   position: relative;
+  /* 0.1cqw ist eine Einheit der Zeichnung in px */
+  container-type: inline-size;
   aspect-ratio: 1000 / 400;
   clip-path: inset(-3rem);
   /* Das vergrösserte Auto darf die Seite nicht verbreitern; oben bleibt der Puls der Markierungen sichtbar */
@@ -1385,10 +1400,10 @@ ol {
   color: var(--color-text-muted);
 }
 
-/* Kamera in Einheiten der Zeichnung, von JS gesetzt. Die Strichstärke rechnet den Zoom heraus,
+/* Kamera, von JS gesetzt und animiert. Die Strichstärke rechnet den Zoom heraus,
    damit die Linien in der Einzelheit so fein bleiben wie am ganzen Auto. */
 .car-explorer__camera {
-  transform: translate(var(--car-x), var(--car-y)) scale(var(--car-zoom));
+  transform: translate(calc(var(--car-x) * 1px), calc(var(--car-y) * 1px)) scale(var(--car-zoom));
   stroke-width: calc(var(--car-stroke) / var(--car-zoom));
 }
 
@@ -1421,9 +1436,13 @@ ol {
   color: var(--color-accent);
 }
 
+/* Jede Markierung sitzt am oberen Ende ihrer Hinweislinie (--ax | --ay in Einheiten der Zeichnung)
+   und folgt der Kamera; in der Einzelheit rutscht sie höchstens bis --car-edge an den Rand. */
 .car-explorer__hotspot {
+  --ay: 20;
   position: absolute;
-  top: 5%;
+  top: 0;
+  left: 0;
   width: 1.75rem;
   height: 1.75rem;
   border: 1px solid var(--color-accent);
@@ -1432,8 +1451,9 @@ ol {
   color: var(--color-accent);
   z-index: 2;
   transform: translate(-50%, -50%);
-  /* Von JS gesetzt: in der Einzelheit bleibt die Markierung auf ihrer Hinweislinie */
-  translate: var(--dx, 0px) var(--dy, 0px);
+  translate:
+    calc((var(--car-x) + var(--ax) * var(--car-zoom)) * 0.1cqw)
+    max(var(--car-edge), calc((var(--car-y) + var(--ay) * var(--car-zoom)) * 0.1cqw));
   transition:
     background-color var(--transition),
     color var(--transition);
@@ -1459,19 +1479,19 @@ ol {
 }
 
 .car-explorer__hotspot--telemetry {
-  left: 11%;
+  --ax: 110;
 }
 
 .car-explorer__hotspot--cockpit {
-  left: 40%;
+  --ax: 400;
 }
 
 .car-explorer__hotspot--power {
-  left: 59%;
+  --ax: 590;
 }
 
 .car-explorer__hotspot--chassis {
-  left: 73%;
+  --ax: 730;
 }
 
 /* Ausserhalb der Einzelheit: ausgeblendet statt halb abgeschnitten */
@@ -1567,27 +1587,26 @@ ol {
     animation-name: car-explorer-uncover;
   }
 
-  /* Kamerafahrt zur Einzelheit; zurück zum ganzen Auto geht es schneller */
+  /* Die Kamera fährt per JS (Web Animations API); Ausschnitt und Rand folgen hier,
+     hin 700ms, zurück zum ganzen Auto schneller */
+  .car-explorer {
+    transition: --car-edge 450ms var(--ease-out);
+  }
+
   .car-explorer__stage {
-    transition-property: clip-path, --car-x, --car-y, --car-zoom;
-    transition-duration: 450ms;
-    transition-timing-function: var(--ease-out);
+    transition: clip-path 450ms var(--ease-out);
   }
 
-  .car-explorer__hotspot {
-    transition:
-      translate 450ms var(--ease-out),
-      opacity var(--transition),
-      background-color var(--transition),
-      color var(--transition);
-  }
-
+  .car-explorer--detail,
   .car-explorer--detail .car-explorer__stage {
     transition-duration: 700ms;
   }
 
-  .car-explorer--detail .car-explorer__hotspot {
-    transition-duration: 700ms, 200ms, 200ms, 200ms;
+  .car-explorer__hotspot {
+    transition:
+      opacity var(--transition),
+      background-color var(--transition),
+      color var(--transition);
   }
 
   /* Der Text folgt, wenn die Kamera fast angekommen ist */
