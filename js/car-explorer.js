@@ -9,26 +9,23 @@ const DRAWN_LINES =
 const DRAWING_WIDTH = 1000;
 // Markierungen bleiben mit ihrer Tippfläche von 44px ganz im Ausschnitt
 const EDGE_PX = 28;
-const HINT_OPEN = "Wähle einen Punkt am Auto, um mehr über mich zu erfahren.";
-const HINT_CLOSE = "Ein erneuter Klick auf den Punkt zeigt wieder das ganze Auto.";
-// Gleiche Kurve wie --ease-out im CSS
-const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
-const ENTER_MS = 700;
-const LEAVE_MS = 450;
+const HINT_OPEN = "Bauteil wählen";
+const HINT_CLOSE = "Ganzes Auto: Punkt erneut wählen";
+// Kamera wie im Film: weich anfahren und lange ausrollen, nie ruckartig
+const SWAY = "cubic-bezier(0.37, 0, 0.63, 1)";
+const LAND = "cubic-bezier(0.22, 0.61, 0.36, 1)";
+const ENTER_MS = 1200;
+const LEAVE_MS = 900;
 const WHOLE_CAR = { "--car-x": 0, "--car-y": 0, "--car-zoom": 1 };
 
 /**
- * Eigene Kamerafahrten je Bauteil. Jede Station ist ein Ausschnitt der Zeichnung (x y Breite Höhe),
- * „offset“ der Zeitpunkt (0–1) und „easing“ die Kurve bis zur nächsten Station.
+ * Eigene Kamerafahrten je Bauteil. Jede Station ist ein Ausschnitt der Zeichnung (x y Breite Höhe)
+ * mit dem Zeitpunkt „offset“ (0–1). Zwischen den Stationen schwingt die Kamera weich, am Ziel rollt sie aus.
  * Bauteile ohne Eintrag fahren direkt hin.
  */
 const ROUTES = {
   // Wie eine Onboard-Kamera: zurück und über das Auto, dann von oben ins Cockpit tauchen
-  cockpit: {
-    duration: 1400,
-    easing: "cubic-bezier(0.65, 0, 0.35, 1)",
-    stops: [{ rect: [60, -300, 800, 640], offset: 0.4, easing: EASE_OUT }],
-  },
+  cockpit: { duration: 2400, stops: [{ rect: [60, -300, 800, 640], offset: 0.45 }] },
 };
 
 const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -96,13 +93,17 @@ export function initCarExplorer() {
       flight = route
         ? stage.animate(
             [
-              { ...from, easing: route.easing },
-              ...route.stops.map(({ rect, offset, easing }) => ({ ...frame(rect), offset, easing })),
+              { ...from, easing: SWAY },
+              ...route.stops.map(({ rect, offset }, index) => ({
+                ...frame(rect),
+                offset,
+                easing: index === route.stops.length - 1 ? LAND : SWAY,
+              })),
               target,
             ],
             { duration },
           )
-        : stage.animate([from, target], { duration, easing: EASE_OUT });
+        : stage.animate([from, target], { duration, easing: hotspot ? LAND : SWAY });
     }
 
     const unit = stage.clientWidth / DRAWING_WIDTH;
