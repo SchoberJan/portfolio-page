@@ -28,6 +28,14 @@ const ROUTES = {
   cockpit: { duration: 2400, stops: [{ rect: [60, -300, 800, 640], offset: 0.45 }] },
   // Kamerafahrt vom Heckflügel nach vorn bis zum Motor
   power: { duration: 2200, stops: [{ rect: [740, 40, 260, 320], offset: 0.45 }] },
+  // Die Kamera folgt der Datenleitung vom Heck bis zur Nase
+  telemetry: {
+    duration: 2600,
+    stops: [
+      { rect: [620, 40, 340, 320], offset: 0.35 },
+      { rect: [320, 40, 340, 320], offset: 0.7 },
+    ],
+  },
 };
 
 const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
