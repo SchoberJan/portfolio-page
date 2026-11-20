@@ -17,6 +17,20 @@ const ENTER_MS = 700;
 const LEAVE_MS = 450;
 const WHOLE_CAR = { "--car-x": 0, "--car-y": 0, "--car-zoom": 1 };
 
+/**
+ * Eigene Kamerafahrten je Bauteil. Jede Station ist ein Ausschnitt der Zeichnung (x y Breite Höhe),
+ * „offset“ der Zeitpunkt (0–1) und „easing“ die Kurve bis zur nächsten Station.
+ * Bauteile ohne Eintrag fahren direkt hin.
+ */
+const ROUTES = {
+  // Wie eine Onboard-Kamera: zurück und über das Auto, dann von oben ins Cockpit tauchen
+  cockpit: {
+    duration: 1400,
+    easing: "cubic-bezier(0.65, 0, 0.35, 1)",
+    stops: [{ rect: [60, -300, 800, 640], offset: 0.4, easing: EASE_OUT }],
+  },
+};
+
 const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /**
@@ -74,8 +88,21 @@ export function initCarExplorer() {
     const from = Object.fromEntries(Object.keys(target).map((key) => [key, Number(style.getPropertyValue(key))]));
     flight?.cancel();
     for (const [key, value] of Object.entries(target)) stage.style.setProperty(key, value);
+    const route = hotspot && ROUTES[current];
+    const duration = route?.duration ?? (hotspot ? ENTER_MS : LEAVE_MS);
+    // Der Text wartet im CSS, bis die Kamera fast angekommen ist
+    root.style.setProperty("--flight", `${duration}ms`);
     if (animate && !prefersReducedMotion()) {
-      flight = stage.animate([from, target], { duration: hotspot ? ENTER_MS : LEAVE_MS, easing: EASE_OUT });
+      flight = route
+        ? stage.animate(
+            [
+              { ...from, easing: route.easing },
+              ...route.stops.map(({ rect, offset, easing }) => ({ ...frame(rect), offset, easing })),
+              target,
+            ],
+            { duration },
+          )
+        : stage.animate([from, target], { duration, easing: EASE_OUT });
     }
 
     const unit = stage.clientWidth / DRAWING_WIDTH;

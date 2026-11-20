@@ -1609,9 +1609,9 @@ ol {
       color var(--transition);
   }
 
-  /* Der Text folgt, wenn die Kamera fast angekommen ist */
+  /* Der Text folgt, wenn die Kamera fast angekommen ist; --flight ist die Dauer der Fahrt (JS) */
   .car-explorer__panel {
-    animation: car-explorer-reveal 300ms var(--ease-out) 200ms both;
+    animation: car-explorer-reveal 300ms var(--ease-out) calc(var(--flight, 700ms) - 500ms) both;
   }
 }
 
