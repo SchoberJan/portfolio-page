@@ -26,6 +26,8 @@ const WHOLE_CAR = { "--car-x": 0, "--car-y": 0, "--car-zoom": 1 };
 const ROUTES = {
   // Wie eine Onboard-Kamera: zurück und über das Auto, dann von oben ins Cockpit tauchen
   cockpit: { duration: 2400, stops: [{ rect: [60, -300, 800, 640], offset: 0.45 }] },
+  // Kamerafahrt vom Heckflügel nach vorn bis zum Motor
+  power: { duration: 2200, stops: [{ rect: [740, 40, 260, 320], offset: 0.45 }] },
 };
 
 const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
