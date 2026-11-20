@@ -47,6 +47,7 @@
   --radius-sm: 0.125rem;
   --shadow-header: 0 1px 0 var(--color-border);
   --transition: 200ms ease;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Layout */
   --header-height: 4rem;
@@ -1329,14 +1330,50 @@ ol {
 .about {
   display: grid;
   gap: var(--space-xl);
-  align-items: center;
 }
 
-/* Klickbares F1-Auto: Bauteil wählen, der Text folgt */
+/* Klickbares F1-Auto: ohne Auswahl gross über die ganze Breite, ein gewähltes Bauteil erscheint
+   als Einzelheit wie auf einem Bauplan. --detail-width ist die Breite dieser Einzelheit. */
+.car-explorer {
+  --detail-width: 100%;
+  --car-stroke: 2.5;
+}
 
+/* Registriert, damit die Kamera selbst animiert: Linien und Strichstärke folgen ihr in jedem Bild */
+@property --car-x {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --car-y {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --car-zoom {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+.car-explorer__view {
+  display: grid;
+  gap: var(--space-md);
+}
+
+/* Die Einzelheit schneidet das vergrösserte Auto ab; ohne Auswahl bleibt Platz für den Puls der Markierungen */
 .car-explorer__stage {
   position: relative;
   aspect-ratio: 1000 / 400;
+  clip-path: inset(-3rem);
+  /* Das vergrösserte Auto darf die Seite nicht verbreitern; oben bleibt der Puls der Markierungen sichtbar */
+  overflow-x: clip;
+}
+
+.car-explorer--detail .car-explorer__stage {
+  clip-path: inset(0 calc(100% - var(--detail-width)) 0 0);
 }
 
 .car-explorer__car {
@@ -1345,8 +1382,14 @@ ol {
   overflow: visible;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.5;
   color: var(--color-text-muted);
+}
+
+/* Kamera in Einheiten der Zeichnung, von JS gesetzt. Die Strichstärke rechnet den Zoom heraus,
+   damit die Linien in der Einzelheit so fein bleiben wie am ganzen Auto. */
+.car-explorer__camera {
+  transform: translate(var(--car-x), var(--car-y)) scale(var(--car-zoom));
+  stroke-width: calc(var(--car-stroke) / var(--car-zoom));
 }
 
 .car-explorer__axis {
@@ -1387,7 +1430,10 @@ ol {
   border-radius: 50%;
   background-color: var(--color-bg);
   color: var(--color-accent);
+  z-index: 2;
   transform: translate(-50%, -50%);
+  /* Von JS gesetzt: in der Einzelheit bleibt die Markierung auf ihrer Hinweislinie */
+  translate: var(--dx, 0px) var(--dy, 0px);
   transition:
     background-color var(--transition),
     color var(--transition);
@@ -1428,25 +1474,53 @@ ol {
   left: 73%;
 }
 
+/* Ausserhalb der Einzelheit: ausgeblendet statt halb abgeschnitten */
+.car-explorer__hotspot[inert] {
+  opacity: 0;
+}
+
 .car-explorer__hotspot:hover,
 .car-explorer__hotspot[data-active] {
   background-color: var(--color-accent);
   color: var(--color-on-accent);
 }
 
-/* Feste Mindesthöhe, damit die Seite beim Wechsel nicht springt */
-.car-explorer__panels {
-  display: flex;
-  align-items: center;
-  min-height: 22rem;
-  scroll-margin-block: calc(var(--header-height) + var(--space-md)) var(--space-md);
+/* Rahmen und Massstab der Einzelheit, wie bei einer Detailansicht im Bauplan */
+.car-explorer__detail {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 1;
+  width: var(--detail-width);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  background-color: var(--color-surface);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
 }
 
-.car-explorer__panel {
-  padding: var(--space-lg);
+.car-explorer--detail .car-explorer__detail {
+  opacity: 1;
+}
+
+.car-explorer__scale {
+  position: absolute;
+  left: var(--space-sm);
+  bottom: var(--space-sm);
+  padding: 0.125rem var(--space-xs);
+  background-color: var(--color-bg);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+}
+
+.car-explorer__hint {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+/* Der Text steht ohne eigene Fläche direkt auf dem Bauplan */
+.car-explorer__panels {
+  scroll-margin-block: calc(var(--header-height) + var(--space-md)) var(--space-md);
 }
 
 .car-explorer__label {
@@ -1493,8 +1567,32 @@ ol {
     animation-name: car-explorer-uncover;
   }
 
+  /* Kamerafahrt zur Einzelheit; zurück zum ganzen Auto geht es schneller */
+  .car-explorer__stage {
+    transition-property: clip-path, --car-x, --car-y, --car-zoom;
+    transition-duration: 450ms;
+    transition-timing-function: var(--ease-out);
+  }
+
+  .car-explorer__hotspot {
+    transition:
+      translate 450ms var(--ease-out),
+      opacity var(--transition),
+      background-color var(--transition),
+      color var(--transition);
+  }
+
+  .car-explorer--detail .car-explorer__stage {
+    transition-duration: 700ms;
+  }
+
+  .car-explorer--detail .car-explorer__hotspot {
+    transition-duration: 700ms, 200ms, 200ms, 200ms;
+  }
+
+  /* Der Text folgt, wenn die Kamera fast angekommen ist */
   .car-explorer__panel {
-    animation: car-explorer-reveal 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    animation: car-explorer-reveal 300ms var(--ease-out) 200ms both;
   }
 }
 
@@ -1645,12 +1743,8 @@ ol {
     transform: translateX(-50%);
   }
 
-  .car-explorer__car {
-    stroke-width: 1.5;
-  }
-
-  .car-explorer__panels {
-    min-height: 14rem;
+  .car-explorer {
+    --car-stroke: 1.5;
   }
 
   .telemetry {
@@ -1700,26 +1794,6 @@ ol {
     display: inline;
   }
 
-  /* Auto und Text auf gleicher Höhe: nach dem Klick muss niemand scrollen */
-  .about {
-    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-    grid-template-areas:
-      "intro intro"
-      "stage panels";
-  }
-
-  .about__intro {
-    grid-area: intro;
-  }
-
-  .car-explorer__stage {
-    grid-area: stage;
-  }
-
-  .car-explorer__panels {
-    grid-area: panels;
-    min-height: 24rem;
-  }
   /* Rennliste links, Strecke in der Mitte, Countdown rechts */
   .countdown__body {
     grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1.3fr);
@@ -1728,42 +1802,44 @@ ol {
   }
 }
 
-@media (min-width: 1280px) {
-  .car-explorer__panels {
-    min-height: 23rem;
-  }
-}
-
 /* ==========================================================================
-   Handy im Querformat: Auto und Text nebeneinander, damit beide sichtbar bleiben
+   Ab 1024px und im Querformat des Handys: Einzelheit links, Text rechts daneben,
+   damit nach dem Klick niemand scrollen muss
    ========================================================================== */
 
-@media (min-width: 600px) and (max-height: 500px) {
+@media (min-width: 1024px), (min-width: 600px) and (max-height: 500px) {
+  .car-explorer {
+    --detail-width: 58%;
+  }
+
   .about {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
     grid-template-areas:
-      "intro intro"
-      "stage panels";
-    align-items: center;
+      "intro"
+      "view";
   }
 
   .about__intro {
     grid-area: intro;
   }
 
-  .car-explorer__stage {
-    grid-area: stage;
+  .car-explorer__view {
+    grid-area: view;
   }
 
   .car-explorer__panels {
-    grid-area: panels;
-    min-height: 14rem;
+    grid-area: view;
+    z-index: 3;
+    align-self: center;
+    justify-self: end;
+    width: calc(100% - var(--detail-width) - var(--space-xl));
   }
+}
 
-  .car-explorer__panel {
-    padding: var(--space-sm);
-  }
+/* ==========================================================================
+   Handy im Querformat: engerer Text, damit er neben die Einzelheit passt
+   ========================================================================== */
 
+@media (min-width: 600px) and (max-height: 500px) {
   .car-explorer__title {
     font-size: var(--fs-base);
   }
