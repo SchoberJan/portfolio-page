@@ -36,6 +36,8 @@ const ROUTES = {
       { rect: [320, 40, 340, 320], offset: 0.7 },
     ],
   },
+  // Erst nah an den Monocoque, dann aufziehen, bis das ganze Auto im Bild steht
+  chassis: { duration: 2200, stops: [{ rect: [400, 110, 300, 180], offset: 0.4 }] },
 };
 
 const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
